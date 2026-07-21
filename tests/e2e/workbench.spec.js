@@ -8,7 +8,7 @@ test("loads a fictional scenario and renders authoritative engine results", asyn
   await expect(page.getByRole("heading", { name: "CPU-to-GPU inference modernization" })).toBeVisible();
   await expect(page.locator("#analysis-source-label")).toHaveText("Saved engine result");
   await expect(page.locator("#net-impact")).not.toHaveText("—");
-  await expect(page.locator("#confidence-score")).toHaveText("12 / 100");
+  await expect(page.locator("#confidence-score")).toHaveText("15 / 100");
   await expect(page.locator("#lineage-grid .lineage-card").first()).toBeVisible();
 
   await page.locator("#export-button").click();

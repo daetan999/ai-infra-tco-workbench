@@ -93,7 +93,7 @@ Scenario endpoints return a consistent `{ "success", "data", "error" }` envelope
 | `POST` | `/api/scenarios` | Evaluate and create a scenario |
 | `GET` | `/api/scenarios/{scenario_id}` | Read the latest saved analysis |
 | `PUT` | `/api/scenarios/{scenario_id}` | Evaluate and append an immutable version |
-| `DELETE` | `/api/scenarios/{scenario_id}` | Delete a scenario and its versions |
+| `DELETE` | `/api/scenarios/{scenario_id}` | Archive a scenario while retaining immutable versions |
 | `GET` | `/api/scenarios/{scenario_id}/versions` | List immutable analysis history |
 | `GET` | `/api/scenarios/{scenario_id}/versions/{version}` | Read one historical version |
 | `GET` | `/api/scenarios/{scenario_id}/exports/{format}` | Export `json`, `csv`, or `pdf` |
@@ -141,6 +141,7 @@ docs/             Architecture, methodology, guardrails, and portfolio evidence
 
 - Financial calculations use deterministic code and explicit rounding; narrative text cannot change results.
 - Exports read the saved analysis snapshot, preserving what reviewers actually approved.
+- Archived scenarios leave the active workspace but remain in the local SQLite history until the database file is removed under an approved retention process.
 - Errors are sanitized at the HTTP boundary, inputs are schema-validated, and exported responses disable content sniffing and caching.
 - The included application is a **single-user local demonstrator**. Shared or production deployment requires authentication, authorization, tenant isolation, TLS, rate limits, retention controls, and an approved data-classification process.
 - Do not enter customer identifiers, confidential configurations, credentials, production telemetry, proprietary prices, supplier quotes, or contract terms into a public demonstration.

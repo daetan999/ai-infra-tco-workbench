@@ -11,9 +11,9 @@
     "pue", "power_per_kwh", "staff_fte", "staff_annual_cost", "operating_hours_year",
   ]);
   const defaultAssumptions = [
-    { assumption: "Accelerator pricing", value: "$3.35 / hour", source: "Fictional vendor estimate · validate", confidence: "medium" },
-    { assumption: "Demand growth", value: "18% annually", source: "Illustrative planning hypothesis", confidence: "low" },
-    { assumption: "Staffing model", value: "3.0 FTE", source: "Fictional operating model", confidence: "medium" },
+    { assumption: "Compute hourly cost", value: "$3.35 / hour", source: "Fictional vendor estimate · validate", confidence: "medium" },
+    { assumption: "Annual growth pct", value: "18% annually", source: "Illustrative planning hypothesis", confidence: "low" },
+    { assumption: "Staff FTE", value: "3.0 FTE", source: "Fictional operating model", confidence: "medium" },
   ];
   const SOURCE_METADATA = " | workbench-meta:";
   let state = {
@@ -193,9 +193,14 @@
   }
 
   function serializeAssumption(item) {
-    const metadata = encodeURIComponent(JSON.stringify({ value: item.value, confidence: item.confidence }));
-    const source = item.source.trim() || "Unverified hypothesis";
-    return `${source.slice(0, Math.max(0, 500 - SOURCE_METADATA.length - metadata.length))}${SOURCE_METADATA}${metadata}`;
+    const source = (item.source.trim() || "Unverified hypothesis").slice(0, 240);
+    let value = String(item.value).slice(0, 80);
+    let metadata = encodeURIComponent(JSON.stringify({ value, confidence: item.confidence }));
+    const metadataLimit = 500 - SOURCE_METADATA.length - source.length;
+    while (metadata.length > metadataLimit && value.length) {
+      value = value.slice(0, -1); metadata = encodeURIComponent(JSON.stringify({ value, confidence: item.confidence }));
+    }
+    return `${source}${SOURCE_METADATA}${metadata}`;
   }
 
   function assumptionSources(items) {
@@ -276,12 +281,12 @@
 
   async function deleteScenario() {
     if (!state.activeId) return;
-    const confirmed = await confirmAction("Delete this scenario?", "This removes the saved scenario and cannot be undone.", "Delete scenario");
+    const confirmed = await confirmAction("Archive this scenario?", "This removes it from the active workspace while retaining immutable analysis history.", "Archive scenario");
     if (!confirmed) return;
     try {
       await api(`/${encodeURIComponent(state.activeId)}`, { method: "DELETE" });
       resetDraft();
-      toast("Scenario deleted", "success");
+      toast("Scenario archived", "success");
       await loadScenarios();
     } catch (error) { toast(error.message, "error"); }
   }
@@ -453,12 +458,16 @@
 
   function draftConfidence(payload) {
     const sources = payload.assumption_sources;
+    const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const evidence = Object.entries(sources).map(([key, source]) => ({ key: normalize(key), ...splitStoredSource(source) }));
+    const weights = { low: 0.3, medium: 0.65, high: 1 };
     const workloadPaths = Object.entries(payload.workload).filter(([key, value]) => key !== "workload_type" && value !== 0).map(([key]) => `workload.${key}`);
     const infrastructurePaths = ["current_infrastructure", "proposed_infrastructure"].flatMap((prefix) => Object.entries(payload[prefix]).filter(([, value]) => typeof value === "number" && value !== 0).map(([key]) => `${prefix}.${key}`));
     const transitionPaths = ["migration_cost", "implementation_cost"].filter((key) => payload[key] !== 0);
     const material = [...workloadPaths, ...infrastructurePaths, ...transitionPaths, "contract_years"];
-    const sourced = material.filter((path) => sources[path] || sources[path.split(".").at(-1)]).length;
-    const coverage = material.length ? sourced / material.length * 100 : 0;
+    const matches = material.map((path) => evidence.find((item) => [normalize(path), normalize(path.split(".").at(-1))].includes(item.key)));
+    const sourced = matches.filter(Boolean).length;
+    const coverage = material.length ? matches.reduce((sum, item) => sum + (item ? weights[item.confidence] || weights.medium : 0), 0) / material.length * 100 : 0;
     const contractCoverage = Math.min(payload.contract_years / 5, 1) * 100;
     const score = roundPayback(coverage * 0.8 + contractCoverage * 0.2);
     return { score, level: score >= 80 ? "High" : score >= 50 ? "Medium" : "Low", sourced_assumptions: sourced, material_assumptions: material.length };

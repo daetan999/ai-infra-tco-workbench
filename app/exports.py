@@ -9,6 +9,7 @@ import re
 from collections.abc import Mapping, Sequence
 from html import escape
 from typing import Any
+from urllib.parse import unquote
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import LETTER
@@ -34,6 +35,7 @@ SLATE = colors.HexColor("#5E7080")
 MIST = colors.HexColor("#EAF0F3")
 TEAL = colors.HexColor("#178C80")
 AMBER = colors.HexColor("#B7791F")
+SOURCE_METADATA = " | workbench-meta:"
 
 
 def export_json(analysis: StoredAnalysis) -> str:
@@ -593,7 +595,19 @@ def _yes_no(value: Any) -> str:
 
 def _sources_text(sources: Any) -> str:
     if isinstance(sources, Mapping):
-        return "; ".join(f"{key}: {value}" for key, value in sources.items())
+        return "; ".join(_source_label(value) for value in sources.values())
     if isinstance(sources, Sequence) and not isinstance(sources, (str, bytes)):
-        return "; ".join(str(item) for item in sources)
+        return "; ".join(_source_label(item) for item in sources)
     return "No sources recorded"
+
+
+def _source_label(value: Any) -> str:
+    source = str(value)
+    clean, marker, encoded = source.rpartition(SOURCE_METADATA)
+    if not marker:
+        return source
+    try:
+        confidence = str(json.loads(unquote(encoded)).get("confidence", "medium")).lower()
+    except (json.JSONDecodeError, TypeError, ValueError):
+        confidence = "medium"
+    return f"{clean.strip() or 'Unverified hypothesis'} ({confidence} confidence)"

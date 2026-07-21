@@ -37,6 +37,10 @@ def test_crud_workflow_creates_immutable_versions(tmp_path, evaluator, scenario_
 
         deleted = client.delete(f"/api/scenarios/{created['scenario_id']}")
         assert deleted.status_code == 200
+        assert deleted.json()["data"] == {
+            "scenario_id": created["scenario_id"],
+            "archived": True,
+        }
         assert client.get(f"/api/scenarios/{created['scenario_id']}").status_code == 404
 
 

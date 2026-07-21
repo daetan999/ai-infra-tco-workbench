@@ -1,9 +1,14 @@
 """Pure Decimal-based TCO, ROI, payback, and sensitivity calculations."""
 
+import json
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
+from urllib.parse import unquote
+
+from pydantic import ValidationError
 
 from app.domain import (
     AnalysisResult,
@@ -19,6 +24,7 @@ from app.domain import (
     UnitEconomics,
     Workload,
 )
+from app.schemas import ScenarioInput as ScenarioContract
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
@@ -30,6 +36,8 @@ FACTOR = Decimal("0.0001")
 MONTHS_PER_YEAR = Decimal("12")
 GB_PER_TB = Decimal("1000")
 DISCLAIMER = "Modeled estimates are decision-support inputs, not guarantees or financial advice."
+SOURCE_METADATA = " | workbench-meta:"
+CONFIDENCE_WEIGHTS = {"low": Decimal("0.3"), "medium": Decimal("0.65"), "high": ONE}
 
 WORKLOAD_FIELDS = (
     "model_size_billion",
@@ -136,6 +144,10 @@ def parse_scenario(payload: Mapping[str, Any]) -> ScenarioInput:
     """Validate and copy an untrusted input mapping into immutable domain objects."""
     if not isinstance(payload, Mapping):
         raise ValueError("scenario payload must be a mapping")
+    try:
+        payload = ScenarioContract.model_validate(payload).model_dump(mode="json")
+    except ValidationError as error:
+        raise ValueError("scenario payload violates the canonical input contract") from error
     contract = _number(payload, "contract_years", "scenario", ONE)
     if contract != contract.to_integral_value():
         raise ValueError("scenario.contract_years must be a whole number")
@@ -416,23 +428,43 @@ def _material_assumptions(scenario: ScenarioInput) -> tuple[str, ...]:
     return (*workload, *infrastructure, *transition, "contract_years")
 
 
-def _find_source(path: str, sources: Mapping[str, str]) -> str | None:
-    exact = sources.get(path)
-    if exact:
-        return exact
-    return sources.get(path.rsplit(".", 1)[-1])
+def _source_details(source: str) -> tuple[str, Decimal]:
+    clean, marker, encoded = source.rpartition(SOURCE_METADATA)
+    if not marker:
+        return source, CONFIDENCE_WEIGHTS["medium"]
+    try:
+        confidence = str(json.loads(unquote(encoded)).get("confidence", "medium")).lower()
+    except (json.JSONDecodeError, TypeError, ValueError):
+        confidence = "medium"
+    return clean.strip() or "Unverified hypothesis", CONFIDENCE_WEIGHTS.get(
+        confidence, CONFIDENCE_WEIGHTS["medium"]
+    )
+
+
+def _source_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+
+
+def _find_source(path: str, sources: Mapping[str, str]) -> tuple[str, Decimal] | None:
+    accepted = {_source_key(path), _source_key(path.rsplit(".", 1)[-1])}
+    for key, source in sources.items():
+        if _source_key(key) in accepted:
+            return _source_details(source)
+    return None
 
 
 def _confidence(scenario: ScenarioInput) -> ConfidenceAssessment:
     sources = dict(scenario.assumption_sources)
     material = _material_assumptions(scenario)
-    sourced = sum(_find_source(path, sources) is not None for path in material)
-    coverage = _round(Decimal(sourced) / Decimal(len(material)) * HUNDRED, PERCENT)
+    matches = tuple(_find_source(path, sources) for path in material)
+    sourced = sum(match is not None for match in matches)
+    weighted = sum((match[1] for match in matches if match is not None), start=ZERO)
+    coverage = _round(weighted / Decimal(len(material)) * HUNDRED, PERCENT)
     contract_coverage = _round(min(Decimal(scenario.contract_years) / 5, ONE) * HUNDRED, PERCENT)
     score = _round(coverage * Decimal("0.8") + contract_coverage * Decimal("0.2"), PAYBACK_MONTH)
     level = "High" if score >= 80 else "Medium" if score >= 50 else "Low"
     rationale = (
-        f"{sourced} of {len(material)} material assumptions have source references; "
+        f"{sourced} of {len(material)} material assumptions have confidence-weighted sources; "
         f"pricing is contract-covered for {scenario.contract_years} year(s) of the "
         "five-year horizon."
     )
@@ -444,7 +476,7 @@ def _confidence(scenario: ScenarioInput) -> ConfidenceAssessment:
 def _source_refs(scenario: ScenarioInput, paths: tuple[str, ...]) -> tuple[str, ...]:
     sources = dict(scenario.assumption_sources)
     return tuple(
-        source if (source := _find_source(path, sources)) else f"Unreferenced user input: {path}"
+        source[0] if (source := _find_source(path, sources)) else f"Unreferenced user input: {path}"
         for path in paths
     )
 

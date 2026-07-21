@@ -4,6 +4,7 @@ import json
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
 from decimal import Decimal
+from urllib.parse import quote
 
 import pytest
 
@@ -16,6 +17,7 @@ def scenario_payload() -> dict[str, object]:
     return {
         "name": "Build or rent",
         "description": "Deterministic comparison",
+        "fictional": True,
         "comparison_type": "current_vs_proposed",
         "workload": workload(),
         "current_infrastructure": infrastructure(
@@ -237,6 +239,26 @@ def test_confidence_and_lineage_surface_source_provenance_for_outputs() -> None:
     assert "Current invoice" in lineages["current.annual_costs[1].compute"].source_refs
 
 
+def test_confidence_labels_weight_authoritative_source_coverage() -> None:
+    payload = scenario_payload()
+
+    def result_for(confidence: str):
+        metadata = quote(json.dumps({"value": "$10", "confidence": confidence}))
+        payload["assumption_sources"] = {
+            "current_infrastructure.compute_hourly_cost": (
+                f"Current invoice | workbench-meta:{metadata}"
+            )
+        }
+        return calculate_analysis(payload)
+
+    low = result_for("low")
+    high = result_for("high")
+
+    assert high.confidence.score > low.confidence.score
+    assert high.confidence.source_coverage_pct > low.confidence.source_coverage_pct
+    assert "workbench-meta" not in high.lineage[1].source_refs[1]
+
+
 def test_result_is_immutable_deterministic_and_does_not_mutate_input() -> None:
     payload = scenario_payload()
     original = deepcopy(payload)
@@ -258,10 +280,13 @@ def test_result_is_immutable_deterministic_and_does_not_mutate_input() -> None:
     [
         (("migration_cost",), -1),
         (("contract_years",), 0),
+        (("contract_years",), 11),
         (("workload", "annual_growth_pct"), -101),
         (("current_infrastructure", "productive_utilization_pct"), 0),
         (("current_infrastructure", "productive_utilization_pct"), 101),
         (("proposed_infrastructure", "compute_hourly_cost"), True),
+        (("proposed_infrastructure", "pue"), 6),
+        (("proposed_infrastructure", "operating_hours_year"), 8785),
     ],
 )
 def test_invalid_financial_inputs_fail_fast(path: tuple[str, ...], value: object) -> None:
@@ -279,7 +304,7 @@ def test_decimal_rounding_is_explicit_half_up() -> None:
     payload = scenario_payload()
     payload["current_infrastructure"] = infrastructure(
         accelerator_count=1,
-        compute_hourly_cost="0.005",
+        compute_hourly_cost=0.005,
         operating_hours_year=1,
         storage_tb=0,
         network_egress_tb_month=0,

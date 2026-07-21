@@ -65,7 +65,7 @@ def create_router(repository: AnalysisRepository, evaluator: Evaluator) -> APIRo
     def delete_scenario(scenario_id: UUID) -> dict[str, Any]:
         if not repository.delete(str(scenario_id)):
             raise _not_found()
-        return success({"scenario_id": str(scenario_id), "deleted": True})
+        return success({"scenario_id": str(scenario_id), "archived": True})
 
     _register_history_routes(router, repository)
     return router

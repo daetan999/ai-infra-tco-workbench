@@ -62,7 +62,10 @@ def _scenario(name: str, comparison: str, current: dict, proposed: dict) -> Scen
             "migration_cost": 120000.0,
             "implementation_cost": 65000.0,
             "contract_years": 3,
-            "assumption_sources": ["Fictional benchmark", "Illustrative list pricing"],
+            "assumption_sources": {
+                "current_infrastructure.compute_hourly_cost": "Fictional benchmark",
+                "proposed_infrastructure.compute_hourly_cost": "Illustrative list pricing",
+            },
         }
     )
 

@@ -3,6 +3,7 @@
 import csv
 import io
 import json
+from urllib.parse import quote
 
 from pypdf import PdfReader
 
@@ -42,6 +43,12 @@ def test_csv_export_flattens_fields_and_blocks_formula_injection(
 
 
 def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
+    metadata = quote(json.dumps({"value": "$2.50", "confidence": "high"}))
+    scenario_payload["assumption_sources"] = {
+        "current_infrastructure.compute_hourly_cost": (
+            f"Fictional invoice | workbench-meta:{metadata}"
+        )
+    }
     repository = AnalysisRepository(tmp_path / "analysis.db")
     scenario = ScenarioInput.model_validate(scenario_payload)
     result = evaluate_financial_scenario(scenario.model_dump(mode="json"))
@@ -50,6 +57,7 @@ def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
     document = export_pdf(analysis)
     reader = PdfReader(io.BytesIO(document))
     text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    normalized_text = " ".join(text.split())
 
     assert document.startswith(b"%PDF-")
     assert len(document) > 5000
@@ -61,3 +69,5 @@ def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
     assert "Fictional demonstration" in text
     assert "not a guarantee" in text
     assert "Page 1" in text
+    assert "Fictional invoice (high confidence)" in normalized_text
+    assert "workbench-meta" not in text

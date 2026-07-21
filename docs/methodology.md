@@ -43,6 +43,7 @@ case. These are deterministic scenario ranges, not probability distributions or 
 
 ## Provenance
 
-Inputs are classified as `user_input`, `public_default`, or `illustrative_assumption`. Engine outputs
-are classified as `derived_calculation`. Confidence reflects provenance coverage and input
-completeness; it does not certify pricing, performance, or ROI.
+Source references are keyed to material input paths or field names. Low-, medium-, and
+high-confidence labels weight source coverage at 30%, 65%, and 100%; contract coverage contributes
+the remaining 20% of the displayed score. Formula lineage labels every output as a deterministic
+derivation. Confidence describes evidence quality; it does not certify pricing, performance, or ROI.

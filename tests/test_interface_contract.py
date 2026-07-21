@@ -206,14 +206,14 @@ const infrastructure = {
   staff_fte: 1, staff_annual_cost: 50000
 };
 const item = {
-  assumption: "compute_hourly_cost", value: "$10",
+  assumption: "compute_hourly_cost", value: "€".repeat(80),
   source: "Invoice", confidence: "high"
 };
 const stored = ui.assumptionSources([item]).compute_hourly_cost;
 const restored = ui.splitStoredSource(stored);
 process.stdout.write(JSON.stringify({
   name: scenario.name, id: scenario.id, result: Boolean(scenario.result),
-  annualCost: ui.annualCost(infrastructure), restored,
+  annualCost: ui.annualCost(infrastructure), restored, storedLength: stored.length,
   exportPath: ui.exportPath("scenario/id", "pdf")
 }));
 """
@@ -231,11 +231,10 @@ process.stdout.write(JSON.stringify({
     assert observed["id"] == "245da36b-8a7d-43be-aa9e-f21433dcbc6e"
     assert observed["result"] is True
     assert observed["annualCost"] == 74_800
-    assert observed["restored"] == {
-        "source": "Invoice",
-        "value": "$10",
-        "confidence": "high",
-    }
+    assert observed["storedLength"] <= 500
+    assert observed["restored"]["source"] == "Invoice"
+    assert observed["restored"]["confidence"] == "high"
+    assert 0 < len(observed["restored"]["value"]) < 80
     assert observed["exportPath"] == "/api/scenarios/scenario%2Fid/exports/pdf"
 
 

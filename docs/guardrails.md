@@ -5,6 +5,8 @@
 - Results are directional scenarios and do not guarantee savings, ROI, payback, or performance.
 - Every assumption remains visible and editable; missing or weak provenance reduces confidence.
 - Deterministic code performs every financial calculation. Narrative text cannot alter results.
+- Archive removes a scenario from active views but retains its immutable local history until the
+  SQLite database is deleted under an approved retention process.
 - Formal finance, tax, procurement, accounting, architecture, performance, and legal review remain
   required before a decision.
 
