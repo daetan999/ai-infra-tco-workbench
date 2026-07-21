@@ -41,7 +41,6 @@ def serialize(analysis: StoredAnalysis) -> dict[str, Any]:
 def create_router(repository: AnalysisRepository, evaluator: Evaluator) -> APIRouter:
     """Build a router with explicit local dependencies."""
     router = APIRouter(prefix="/api/scenarios", tags=["scenarios"])
-
     @router.get("")
     def list_scenarios() -> dict[str, Any]:
         return success([serialize(item) for item in repository.list_latest()])
