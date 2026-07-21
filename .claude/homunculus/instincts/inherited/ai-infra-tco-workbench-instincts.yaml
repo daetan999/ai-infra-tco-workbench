@@ -1,0 +1,573 @@
+# Instincts generated from https://github.com/daetan999/ai-infra-tco-workbench
+# Generated: 2026-07-21T06:50:03.254Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: ai-infra-tco-workbench-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, docs, fix, test, refactor
+
+## Evidence
+
+- 13 commits analyzed
+- Detected conventional commit pattern
+- Examples: test: specify backend analysis workflows, docs: establish auditable TCO methodology
+
+---
+id: ai-infra-tco-workbench-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Commit Length
+
+## Action
+
+Keep commit messages concise (~42 characters)
+
+## Evidence
+
+- Average commit message length: 42 chars
+- Based on 13 commits
+
+---
+id: ai-infra-tco-workbench-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: ai-infra-tco-workbench-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: ai-infra-tco-workbench-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: ai-infra-tco-workbench-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: ai-infra-tco-workbench-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Test Framework
+
+## Action
+
+Use playwright as the test framework
+
+## Evidence
+
+- Test framework detected: playwright
+- File pattern: *.spec.js
+
+---
+id: ai-infra-tco-workbench-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Test Naming
+
+## Action
+
+Name test files using the pattern: *.spec.js
+
+## Evidence
+
+- File pattern: *.spec.js
+- Consistent across test files
+
+---
+id: ai-infra-tco-workbench-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Test Types
+
+## Action
+
+Write unit, e2e tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, e2e
+- Coverage config: no
+
+---
+id: ai-infra-tco-workbench-workflow-backend-feature-implementation-and-test
+trigger: "when doing backend feature implementation and test"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Workflow Backend Feature Implementation And Test
+
+## Action
+
+Follow the backend-feature-implementation-and-test workflow:
+1. Edit or create backend modules (e.g., app/domain.py, app/engine.py, app/demo_data.py, app/exports.py, app/repository.py, app/routes.py, app/schemas.py)
+2. Add or update corresponding test files (e.g., tests/test_engine.py, tests/test_demo_data.py, tests/test_exports.py, tests/test_repository.py, tests/test_routes.py, tests/test_schemas.py)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: app/domain.py, app/engine.py, app/demo_data.py
+
+---
+id: ai-infra-tco-workbench-workflow-frontend-interface-and-e2e-update
+trigger: "when doing frontend interface and e2e update"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Workflow Frontend Interface And E2e Update
+
+## Action
+
+Follow the frontend-interface-and-e2e-update workflow:
+1. Edit static frontend files (static/app.js, static/styles.css, templates/index.html)
+2. Update or add end-to-end tests (tests/e2e/workbench.spec.js)
+3. Update contract tests if interface changes (tests/test_interface_contract.py)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: static/app.js, static/styles.css, templates/index.html
+
+---
+id: ai-infra-tco-workbench-workflow-documentation-and-evidence-update
+trigger: "when doing documentation and evidence update"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Workflow Documentation And Evidence Update
+
+## Action
+
+Follow the documentation-and-evidence-update workflow:
+1. Edit documentation files (docs/methodology.md, docs/architecture.md, docs/guardrails.md, README.md)
+2. Add or update assets (docs/assets/*.svg, docs/assets/*.png, docs/examples/*.pdf)
+3. Optionally update CI/CD workflow files (.github/workflows/ci.yml)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: README.md, docs/methodology.md, docs/architecture.md
+
+---
+id: ai-infra-tco-workbench-instinct-file-naming-camelCase
+trigger: "When creating or renaming source files"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct File Naming CamelCase
+
+## Action
+
+Use camelCase for file names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+- Consistent file naming in app/ and tests/
+
+---
+id: ai-infra-tco-workbench-instinct-function-naming-camelCase
+trigger: "When defining a function"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Function Naming CamelCase
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+
+---
+id: ai-infra-tco-workbench-instinct-class-naming-PascalCase
+trigger: "When defining a class"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Class Naming PascalCase
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+
+---
+id: ai-infra-tco-workbench-instinct-constant-naming-SCREAMING_SNAKE_CASE
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Constant Naming SCREAMING_SNAKE_CASE
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+
+---
+id: ai-infra-tco-workbench-instinct-import-style-relative
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Import Style Relative
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+- Imports in app/ modules
+
+---
+id: ai-infra-tco-workbench-instinct-export-style-named
+trigger: "When exporting functions or classes"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Export Style Named
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: ai-infra-tco-workbench-instinct-test-file-pattern
+trigger: "When adding a new test file for frontend e2e tests"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Test File Pattern
+
+## Action
+
+Name the file with the pattern *.spec.js
+
+## Evidence
+
+- Pattern in testing.filePattern
+- tests/e2e/workbench.spec.js
+
+---
+id: ai-infra-tco-workbench-instinct-test-types
+trigger: "When writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Test Types
+
+## Action
+
+Include both unit and e2e tests as appropriate
+
+## Evidence
+
+- Pattern in testing.testTypes
+- Presence of tests/test_engine.py and tests/e2e/workbench.spec.js
+
+---
+id: ai-infra-tco-workbench-instinct-test-location-separate
+trigger: "When creating test files"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Test Location Separate
+
+## Action
+
+Place test files in the separate tests/ directory
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+- All test files in tests/
+
+---
+id: ai-infra-tco-workbench-instinct-test-framework-playwright
+trigger: "When writing frontend e2e tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Test Framework Playwright
+
+## Action
+
+Use Playwright as the testing framework
+
+## Evidence
+
+- Pattern in testing.framework
+- tests/e2e/workbench.spec.js
+
+---
+id: ai-infra-tco-workbench-instinct-commit-format-conventional
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Commit Format Conventional
+
+## Action
+
+Use conventional commit prefixes (feat, fix, docs, test, refactor)
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Examples: 'feat: implement deterministic TCO engine', 'fix: harden TCO sensitivity analysis'
+
+---
+id: ai-infra-tco-workbench-instinct-commit-length-moderate
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Commit Length Moderate
+
+## Action
+
+Keep the commit message concise (~40-45 characters)
+
+## Evidence
+
+- Pattern in commits.averageLength
+- Examples in commits.examples
+
+---
+id: ai-infra-tco-workbench-instinct-backend-feature-implementation
+trigger: "When adding or extending backend features"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Backend Feature Implementation
+
+## Action
+
+Edit or create backend modules in app/ and update/add corresponding tests in tests/
+
+## Evidence
+
+- backend-feature-implementation-and-test workflow
+- Files: app/domain.py, tests/test_engine.py, etc.
+
+---
+id: ai-infra-tco-workbench-instinct-frontend-interface-update
+trigger: "When implementing or modifying frontend features"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Frontend Interface Update
+
+## Action
+
+Edit static/app.js, static/styles.css, templates/index.html and update/add e2e and contract tests
+
+## Evidence
+
+- frontend-interface-and-e2e-update workflow
+- Files: static/app.js, tests/e2e/workbench.spec.js, etc.
+
+---
+id: ai-infra-tco-workbench-instinct-documentation-update
+trigger: "When documenting new features or updating methodology/evidence"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Documentation Update
+
+## Action
+
+Edit docs/ files, update assets, and optionally update CI/CD workflow files
+
+## Evidence
+
+- documentation-and-evidence-update workflow
+- Files: docs/methodology.md, docs/assets/*.svg, .github/workflows/ci.yml
+
+---
+id: ai-infra-tco-workbench-instinct-error-handling-try-catch
+trigger: "When handling errors in code"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: daetan999/ai-infra-tco-workbench
+---
+
+# Ai Infra Tco Workbench Instinct Error Handling Try Catch
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in errorHandling.style
+
