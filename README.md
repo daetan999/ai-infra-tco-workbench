@@ -152,4 +152,4 @@ docs/             Architecture, methodology, guardrails, and portfolio evidence
 
 ---
 
-Part of the Enterprise AI Infrastructure Portfolio
+[Part of the Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
