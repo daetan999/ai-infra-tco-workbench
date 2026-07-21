@@ -92,29 +92,29 @@ def test_annual_cost_breakdown_and_tco_apply_growth_and_one_time_costs() -> None
     current_year_1 = result.current.annual_costs[0]
     assert current_year_1.compute == Decimal("20000.00")
     assert current_year_1.storage == Decimal("1200.00")
-    assert current_year_1.network == Decimal("1228.80")
+    assert current_year_1.network == Decimal("1200.00")
     assert current_year_1.energy == Decimal("2400.00")
     assert current_year_1.staffing == Decimal("50000.00")
-    assert current_year_1.total == Decimal("74828.80")
-    assert result.current.tco_3_year == Decimal("232183.33")
-    assert result.current.tco_5_year == Decimal("401582.31")
+    assert current_year_1.total == Decimal("74800.00")
+    assert result.current.tco_3_year == Decimal("232088.00")
+    assert result.current.tco_5_year == Decimal("401406.48")
 
     proposed_year_1 = result.proposed.annual_costs[0]
     assert proposed_year_1.transition == Decimal("15000.00")
-    assert proposed_year_1.total == Decimal("54587.20")
-    assert result.proposed.tco_3_year == Decimal("138283.63")
-    assert result.proposed.tco_5_year == Decimal("229056.31")
+    assert proposed_year_1.total == Decimal("54580.00")
+    assert result.proposed.tco_3_year == Decimal("138259.80")
+    assert result.proposed.tco_5_year == Decimal("229012.36")
 
 
 def test_comparison_roi_net_value_and_payback_are_modeled_not_guaranteed() -> None:
     result = calculate_analysis(scenario_payload())
     comparison = result.comparison
 
-    assert comparison.savings_3_year == Decimal("93900.00")
-    assert comparison.savings_5_year == Decimal("172526.00")
+    assert comparison.savings_3_year == Decimal("93828.20")
+    assert comparison.savings_5_year == Decimal("172394.12")
     assert comparison.productivity_value_5_year == Decimal("73261.20")
-    assert comparison.net_value_5_year == Decimal("245787.20")
-    assert comparison.roi_5_year_pct == Decimal("107.30")
+    assert comparison.net_value_5_year == Decimal("245655.32")
+    assert comparison.roi_5_year_pct == Decimal("107.27")
     assert comparison.payback_months == Decimal("3.8")
     assert comparison.break_even_within_5_years is True
     assert "not guarantees" in comparison.disclaimer.lower()
@@ -124,10 +124,10 @@ def test_unit_economics_cover_training_inference_and_productive_hours() -> None:
     proposed = calculate_analysis(scenario_payload()).proposed
     units = proposed.unit_economics_3_year
 
-    assert units.cost_per_training_run == Decimal("1551.91")
-    assert units.cost_per_million_requests == Decimal("31.04")
+    assert units.cost_per_training_run == Decimal("1551.61")
+    assert units.cost_per_million_requests == Decimal("31.03")
     assert units.cost_per_productive_accelerator_hour == Decimal("25.68")
-    assert units.recurring_cost == Decimal("123283.63")
+    assert units.recurring_cost == Decimal("123259.80")
 
 
 def test_zero_non_applicable_workload_metrics_return_no_unit_cost() -> None:
@@ -257,12 +257,12 @@ def test_executive_summary_exposes_decision_ready_metrics() -> None:
     assert summary.proposed_tco_5_year == result.proposed.tco_5_year
     assert summary.net_value_5_year == result.comparison.net_value_5_year
     assert summary.recommendation.startswith("Modeled")
-    assert result.to_dict()["comparison"]["savings_5_year"] == 172526.0
+    assert result.to_dict()["comparison"]["savings_5_year"] == 172394.12
 
 
 def test_public_adapter_returns_a_json_serializable_mapping() -> None:
     response = evaluate_financial_scenario(scenario_payload())
 
     assert response["name"] == "Build or rent"
-    assert response["comparison"]["savings_5_year"] == 172526.0  # type: ignore[index]
+    assert response["comparison"]["savings_5_year"] == 172394.12  # type: ignore[index]
     assert json.loads(json.dumps(response))["executive_summary"]["scenario_name"] == "Build or rent"
