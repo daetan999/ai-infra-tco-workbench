@@ -1,9 +1,9 @@
 """Behavioral specification for the deterministic TCO engine."""
 
+import json
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
 from decimal import Decimal
-import json
 
 import pytest
 
@@ -173,11 +173,50 @@ def test_sensitivities_cover_all_requested_dimensions_and_order_risk() -> None:
     }
 
     assert set(grouped) == {"utilization", "price", "growth", "energy"}
-    assert all([case.case for case in cases] == ["low", "base", "high"] for cases in grouped.values())
+    assert all(
+        [case.case for case in cases] == ["low", "base", "high"] for cases in grouped.values()
+    )
     assert grouped["price"][0].proposed_tco_5_year < grouped["price"][2].proposed_tco_5_year
     assert grouped["growth"][0].proposed_tco_5_year < grouped["growth"][2].proposed_tco_5_year
     assert grouped["energy"][0].proposed_tco_5_year < grouped["energy"][2].proposed_tco_5_year
-    assert grouped["utilization"][0].proposed_tco_5_year > grouped["utilization"][2].proposed_tco_5_year
+    assert (
+        grouped["utilization"][0].proposed_tco_5_year
+        > grouped["utilization"][2].proposed_tco_5_year
+    )
+
+
+def test_growth_sensitivity_recalculates_both_sides_of_the_comparison() -> None:
+    payload = scenario_payload()
+    high_growth = next(
+        case
+        for case in calculate_analysis(payload).sensitivities
+        if case.dimension == "growth" and case.case == "high"
+    )
+    payload["workload"] = {
+        **payload["workload"],  # type: ignore[arg-type]
+        "annual_growth_pct": 15,
+    }
+    independently_recalculated = calculate_analysis(payload).comparison
+
+    assert high_growth.savings_5_year == independently_recalculated.savings_5_year
+    assert high_growth.net_value_5_year == independently_recalculated.net_value_5_year
+
+
+def test_utilization_sensitivity_floors_low_case_at_one_percent() -> None:
+    payload = scenario_payload()
+    payload["proposed_infrastructure"] = {
+        **payload["proposed_infrastructure"],  # type: ignore[arg-type]
+        "productive_utilization_pct": 5,
+    }
+
+    utilization = [
+        case
+        for case in calculate_analysis(payload).sensitivities
+        if case.dimension == "utilization"
+    ]
+
+    assert utilization[0].assumption_value == Decimal("1.0000")
+    assert utilization[0].proposed_tco_5_year > utilization[1].proposed_tco_5_year
 
 
 def test_confidence_and_lineage_surface_source_provenance_for_outputs() -> None:
@@ -216,6 +255,7 @@ def test_result_is_immutable_deterministic_and_does_not_mutate_input() -> None:
         (("migration_cost",), -1),
         (("contract_years",), 0),
         (("workload", "annual_growth_pct"), -101),
+        (("current_infrastructure", "productive_utilization_pct"), 0),
         (("current_infrastructure", "productive_utilization_pct"), 101),
         (("proposed_infrastructure", "compute_hourly_cost"), True),
     ],
