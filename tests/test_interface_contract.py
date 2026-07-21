@@ -12,6 +12,53 @@ INDEX = ROOT / "templates" / "index.html"
 SCRIPT = ROOT / "static" / "app.js"
 STYLES = ROOT / "static" / "styles.css"
 FAVICON = ROOT / "static" / "favicon.svg"
+REQUIRED_FORM_FIELDS = {
+    "name",
+    "description",
+    "comparison_type",
+    "workload.workload_type",
+    "workload.model_size_billion",
+    "workload.training_runs_per_month",
+    "workload.monthly_requests_million",
+    "workload.average_demand_units",
+    "workload.peak_demand_units",
+    "workload.annual_growth_pct",
+    "workload.productivity_value_per_hour",
+    "workload.downtime_hours_monthly",
+    "current.label",
+    "current.infrastructure_type",
+    "current.accelerator_count",
+    "current.compute_hourly_cost",
+    "current.productive_utilization_pct",
+    "current.storage_tb",
+    "current.storage_per_tb_month",
+    "current.network_egress_tb_month",
+    "current.network_per_gb",
+    "current.power_kw",
+    "current.pue",
+    "current.power_per_kwh",
+    "current.staff_fte",
+    "current.staff_annual_cost",
+    "current.operating_hours_year",
+    "proposed.label",
+    "proposed.infrastructure_type",
+    "proposed.accelerator_count",
+    "proposed.compute_hourly_cost",
+    "proposed.productive_utilization_pct",
+    "proposed.storage_tb",
+    "proposed.storage_per_tb_month",
+    "proposed.network_egress_tb_month",
+    "proposed.network_per_gb",
+    "proposed.power_kw",
+    "proposed.pue",
+    "proposed.power_per_kwh",
+    "proposed.staff_fte",
+    "proposed.staff_annual_cost",
+    "proposed.operating_hours_year",
+    "migration_cost",
+    "implementation_cost",
+    "contract_years",
+}
 
 
 def read(path: Path) -> str:
@@ -21,6 +68,22 @@ def read(path: Path) -> str:
 @pytest.fixture
 def stored_analysis_response() -> dict[str, object]:
     """Mirror the saved-analysis envelope consumed by a real browser session."""
+    return {
+        "success": True,
+        "data": {
+            "scenario_id": "245da36b-8a7d-43be-aa9e-f21433dcbc6e",
+            "created_at": "2026-07-21T04:00:00Z",
+            "input": {
+                "name": "Fictional accelerator decision",
+                "assumption_sources": {"compute_hourly_cost": "Fictional quote"},
+            },
+            "result": _stored_result(),
+        },
+        "error": None,
+    }
+
+
+def _stored_result() -> dict[str, object]:
     annual = [
         {"year": year, "recurring_total": 100_000 * year, "transition": 0, "total": 100_000 * year}
         for year in range(1, 6)
@@ -31,7 +94,7 @@ def stored_analysis_response() -> dict[str, object]:
         "cost_per_million_requests": 42,
         "cost_per_productive_accelerator_hour": 17,
     }
-    result = {
+    return {
         "current": {
             "annual_costs": annual,
             "unit_economics_3_year": units,
@@ -66,19 +129,6 @@ def stored_analysis_response() -> dict[str, object]:
             "recommendation": "Validate with a controlled pilot.",
         },
     }
-    return {
-        "success": True,
-        "data": {
-            "scenario_id": "245da36b-8a7d-43be-aa9e-f21433dcbc6e",
-            "created_at": "2026-07-21T04:00:00Z",
-            "input": {
-                "name": "Fictional accelerator decision",
-                "assumption_sources": {"compute_hourly_cost": "Fictional quote"},
-            },
-            "result": result,
-        },
-        "error": None,
-    }
 
 
 def test_workspace_exposes_primary_decision_landmarks() -> None:
@@ -96,55 +146,7 @@ def test_workspace_exposes_primary_decision_landmarks() -> None:
 
 def test_form_names_match_the_scenario_create_contract() -> None:
     html = read(INDEX)
-    required_fields = {
-        "name",
-        "description",
-        "comparison_type",
-        "workload.workload_type",
-        "workload.model_size_billion",
-        "workload.training_runs_per_month",
-        "workload.monthly_requests_million",
-        "workload.average_demand_units",
-        "workload.peak_demand_units",
-        "workload.annual_growth_pct",
-        "workload.productivity_value_per_hour",
-        "workload.downtime_hours_monthly",
-        "current.label",
-        "current.infrastructure_type",
-        "current.accelerator_count",
-        "current.compute_hourly_cost",
-        "current.productive_utilization_pct",
-        "current.storage_tb",
-        "current.storage_per_tb_month",
-        "current.network_egress_tb_month",
-        "current.network_per_gb",
-        "current.power_kw",
-        "current.pue",
-        "current.power_per_kwh",
-        "current.staff_fte",
-        "current.staff_annual_cost",
-        "current.operating_hours_year",
-        "proposed.label",
-        "proposed.infrastructure_type",
-        "proposed.accelerator_count",
-        "proposed.compute_hourly_cost",
-        "proposed.productive_utilization_pct",
-        "proposed.storage_tb",
-        "proposed.storage_per_tb_month",
-        "proposed.network_egress_tb_month",
-        "proposed.network_per_gb",
-        "proposed.power_kw",
-        "proposed.pue",
-        "proposed.power_per_kwh",
-        "proposed.staff_fte",
-        "proposed.staff_annual_cost",
-        "proposed.operating_hours_year",
-        "migration_cost",
-        "implementation_cost",
-        "contract_years",
-    }
-
-    for field_name in required_fields:
+    for field_name in REQUIRED_FORM_FIELDS:
         assert f'name="{field_name}"' in html, field_name
 
 
@@ -178,6 +180,7 @@ def test_client_consumes_saved_analysis_envelope_and_engine_outputs(
     assert "scenario.result || null" in script
     assert "body?.error?.message" in script
     assert "assumptionSources(state.assumptions)" in script
+    assert '$(`[name="${name}"]`, $("#scenario-form"))' in script
     assert "result.current.annual_costs" in script
     assert "result.comparison.net_value_5_year" in script
     assert "result.sensitivities" in script
@@ -239,6 +242,8 @@ process.stdout.write(JSON.stringify({
 def test_layout_contract_covers_focus_reflow_and_overflow() -> None:
     styles = read(STYLES)
 
+    assert "[hidden]" in styles
+    assert "display: none !important" in styles
     assert ":focus-visible" in styles
     assert "overflow-x: auto" in styles
     assert "@media (max-width: 760px)" in styles

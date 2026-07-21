@@ -52,9 +52,7 @@ def test_active_infrastructure_requires_positive_capacity(
     with pytest.raises(ValidationError) as error:
         ScenarioInput.model_validate(scenario_payload)
 
-    assert ("current_infrastructure", field) in {
-        item["loc"] for item in error.value.errors()
-    }
+    assert ("current_infrastructure", field) in {item["loc"] for item in error.value.errors()}
 
 
 def test_schema_accepts_json_assumption_source_arrays(scenario_payload: dict) -> None:
@@ -75,6 +73,4 @@ def test_schema_accepts_bounded_contraction_and_source_mapping(scenario_payload:
     validated = ScenarioInput.model_validate(scenario_payload)
 
     assert validated.workload.annual_growth_pct == -25.0
-    assert validated.assumption_sources == {
-        "workload.annual_growth_pct": "Approved capacity plan"
-    }
+    assert validated.assumption_sources == {"workload.annual_growth_pct": "Approved capacity plan"}

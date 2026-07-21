@@ -42,13 +42,12 @@ def _scenario(name: str, comparison: str, current: dict, proposed: dict) -> Scen
         {
             "name": name,
             "description": (
-                f"Fictional demonstration comparing {current['label']} "
-                f"and {proposed['label']}."
+                f"Fictional demonstration comparing {current['label']} and {proposed['label']}."
             ),
             "fictional": True,
             "comparison_type": comparison,
             "workload": {
-                "workload_type": "mixed AI serving",
+                "workload_type": "inference",
                 "model_size_billion": 70.0,
                 "training_runs_per_month": 2,
                 "monthly_requests_million": 60.0,
@@ -85,7 +84,7 @@ def demo_scenarios() -> tuple[ScenarioInput, ScenarioInput, ScenarioInput]:
         ),
         _scenario(
             "Shared serving utilization",
-            "dedicated_vs_shared",
+            "utilization_improvement",
             _infrastructure("Dedicated model pools", "owned", 32, 4.2, 35.0),
             _infrastructure("Shared serving platform", "owned", 20, 4.2, 72.0),
         ),

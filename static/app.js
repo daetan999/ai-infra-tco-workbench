@@ -213,7 +213,7 @@
   }
 
   function formValue(name) {
-    const input = $(`[name="${name}"]`);
+    const input = $(`[name="${name}"]`, $("#scenario-form"));
     if (!input) return "";
     const key = name.split(".").at(-1);
     return numberFields.has(key) || ["migration_cost", "implementation_cost", "contract_years"].includes(key) ? Number(input.value) : input.value.trim();

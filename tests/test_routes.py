@@ -77,7 +77,7 @@ def test_validation_and_missing_records_use_error_envelopes(
 
 def test_unexpected_errors_are_redacted(tmp_path, scenario_payload) -> None:
     def failing_evaluator(_payload):
-        raise RuntimeError("secret database password: hunter2")
+        raise RuntimeError("sensitive backend detail: private-incident-reference")
 
     with client_for(tmp_path, failing_evaluator) as client:
         response = client.post("/api/scenarios", json=scenario_payload)
@@ -87,7 +87,7 @@ def test_unexpected_errors_are_redacted(tmp_path, scenario_payload) -> None:
         "code": "internal_error",
         "message": "An unexpected error occurred.",
     }
-    assert "hunter2" not in response.text
+    assert "private-incident-reference" not in response.text
 
 
 def test_default_adapter_evaluates_with_the_real_financial_engine(
