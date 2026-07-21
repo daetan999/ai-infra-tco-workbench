@@ -17,17 +17,7 @@ def scenario_payload() -> dict[str, object]:
         "name": "Build or rent",
         "description": "Deterministic comparison",
         "comparison_type": "current_vs_proposed",
-        "workload": {
-            "workload_type": "mixed",
-            "model_size_billion": 7,
-            "training_runs_per_month": 2,
-            "monthly_requests_million": 100,
-            "average_demand_units": 5,
-            "peak_demand_units": 10,
-            "annual_growth_pct": 10,
-            "productivity_value_per_hour": 100,
-            "downtime_hours_monthly": 10,
-        },
+        "workload": workload(),
         "current_infrastructure": infrastructure(
             label="Current",
             infrastructure_type="cloud",
@@ -62,6 +52,20 @@ def scenario_payload() -> dict[str, object]:
             "proposed_infrastructure.compute_hourly_cost": "Vendor quote Q3",
             "annual_growth_pct": "Capacity plan",
         },
+    }
+
+
+def workload() -> dict[str, object]:
+    return {
+        "workload_type": "mixed",
+        "model_size_billion": 7,
+        "training_runs_per_month": 2,
+        "monthly_requests_million": 100,
+        "average_demand_units": 5,
+        "peak_demand_units": 10,
+        "annual_growth_pct": 10,
+        "productivity_value_per_hour": 100,
+        "downtime_hours_monthly": 10,
     }
 
 

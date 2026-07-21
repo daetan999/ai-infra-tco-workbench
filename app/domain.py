@@ -5,7 +5,6 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Any
 
-
 JsonMapping = dict[str, Any]
 
 
@@ -146,7 +145,7 @@ class CalculationLineage:
     formula: str
     input_paths: tuple[str, ...]
     source_refs: tuple[str, ...]
-    derived_value: Decimal | bool | str | None
+    derived_value: Decimal | int | bool | str | None
     note: str
 
 

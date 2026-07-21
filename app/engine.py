@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
 
 from app.domain import (
@@ -19,7 +19,6 @@ from app.domain import (
     UnitEconomics,
     Workload,
 )
-
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
@@ -100,7 +99,9 @@ def _mapping(data: Mapping[str, Any], key: str) -> Mapping[str, Any]:
 
 def _parse_workload(data: Mapping[str, Any]) -> Workload:
     path = "workload"
-    values = {key: _number(data, key, path) for key in WORKLOAD_FIELDS if key != "annual_growth_pct"}
+    values = {
+        key: _number(data, key, path) for key in WORKLOAD_FIELDS if key != "annual_growth_pct"
+    }
     growth = _number(data, "annual_growth_pct", path, Decimal("-100"))
     return Workload(
         workload_type=_text(data, "workload_type", path),
@@ -111,7 +112,7 @@ def _parse_workload(data: Mapping[str, Any]) -> Workload:
 
 def _parse_infrastructure(data: Mapping[str, Any], path: str) -> Infrastructure:
     values = {key: _number(data, key, path) for key in INFRASTRUCTURE_FIELDS}
-    utilization = _number(data, "productive_utilization_pct", path, ZERO, HUNDRED)
+    utilization = _number(data, "productive_utilization_pct", path, ONE, HUNDRED)
     if values["pue"] <= ZERO:
         raise ValueError(f"{path}.pue must be greater than zero")
     return Infrastructure(
@@ -196,7 +197,13 @@ def _annual_cost(
     recurring = _round(sum(components, staffing))
     one_time = _round(transition if year == 1 else ZERO)
     return AnnualCostBreakdown(
-        year, _round(growth, FACTOR), *components, staffing, one_time, recurring, _round(recurring + one_time)
+        year,
+        _round(growth, FACTOR),
+        *components,
+        staffing,
+        one_time,
+        recurring,
+        _round(recurring + one_time),
     )
 
 
@@ -337,11 +344,19 @@ def _sensitivity_case(
         proposed_infra = replace(proposed_infra, productive_utilization_pct=value)
     transition = scenario.migration_cost + scenario.implementation_cost
     proposed = _state_tco(proposed_infra, workload, transition, capacity_multiplier)
+    comparison_current = (
+        _state_tco(scenario.current_infrastructure, workload) if dimension == "growth" else current
+    )
     adjusted_scenario = replace(scenario, workload=workload, proposed_infrastructure=proposed_infra)
-    comparison = _comparison(adjusted_scenario, current, proposed)
+    comparison = _comparison(adjusted_scenario, comparison_current, proposed)
     return SensitivityCase(
-        dimension, case, _round(value, FACTOR), proposed.tco_5_year, comparison.savings_5_year,
-        comparison.net_value_5_year, comparison.roi_5_year_pct
+        dimension,
+        case,
+        _round(value, FACTOR),
+        proposed.tco_5_year,
+        comparison.savings_5_year,
+        comparison.net_value_5_year,
+        comparison.roi_5_year_pct,
     )
 
 
@@ -350,15 +365,21 @@ def _sensitivity_values(scenario: ScenarioInput) -> tuple[tuple[str, tuple[Decim
     growth = scenario.workload.annual_growth_pct
     utilization = infrastructure.productive_utilization_pct
     return (
-        ("utilization", (max(ZERO, utilization - 10), utilization, min(HUNDRED, utilization + 10))),
+        ("utilization", (max(ONE, utilization - 10), utilization, min(HUNDRED, utilization + 10))),
         (
             "price",
-            tuple(infrastructure.compute_hourly_cost * factor for factor in (Decimal("0.9"), ONE, Decimal("1.1"))),
+            tuple(
+                infrastructure.compute_hourly_cost * factor
+                for factor in (Decimal("0.9"), ONE, Decimal("1.1"))
+            ),
         ),
         ("growth", (max(Decimal("-100"), growth - 5), growth, growth + 5)),
         (
             "energy",
-            tuple(infrastructure.power_per_kwh * factor for factor in (Decimal("0.8"), ONE, Decimal("1.2"))),
+            tuple(
+                infrastructure.power_per_kwh * factor
+                for factor in (Decimal("0.8"), ONE, Decimal("1.2"))
+            ),
         ),
     )
 
@@ -388,7 +409,9 @@ def _material_assumptions(scenario: ScenarioInput) -> tuple[str, ...]:
         if getattr(value, field) != ZERO
     )
     transition = tuple(
-        field for field in ("migration_cost", "implementation_cost") if getattr(scenario, field) != ZERO
+        field
+        for field in ("migration_cost", "implementation_cost")
+        if getattr(scenario, field) != ZERO
     )
     return (*workload, *infrastructure, *transition, "contract_years")
 
@@ -410,7 +433,8 @@ def _confidence(scenario: ScenarioInput) -> ConfidenceAssessment:
     level = "High" if score >= 80 else "Medium" if score >= 50 else "Low"
     rationale = (
         f"{sourced} of {len(material)} material assumptions have source references; "
-        f"pricing is contract-covered for {scenario.contract_years} year(s) of the five-year horizon."
+        f"pricing is contract-covered for {scenario.contract_years} year(s) of the "
+        "five-year horizon."
     )
     return ConfidenceAssessment(
         score, level, coverage, contract_coverage, sourced, len(material), rationale
@@ -430,38 +454,71 @@ def _line(
     path: str,
     formula: str,
     inputs: tuple[str, ...],
-    value: Decimal | bool | str | None,
+    value: Decimal | int | bool | str | None,
     note: str = "Derived deterministically with Decimal arithmetic and explicit rounding.",
 ) -> CalculationLineage:
     return CalculationLineage(path, formula, inputs, _source_refs(scenario, inputs), value, note)
 
 
-def _annual_lineage(
-    scenario: ScenarioInput, state_name: str, state: StateTCO
-) -> tuple[CalculationLineage, ...]:
-    prefix = f"{state_name}_infrastructure"
+def _annual_lineage_spec(
+    prefix: str,
+) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
     formulas = {
-        "compute": "accelerator_count × compute_hourly_cost × operating_hours_year × growth",
-        "storage": "storage_tb × storage_per_tb_month × 12 × growth",
-        "network": "network_egress_tb_month × 1,000 × network_per_gb × 12 × growth",
-        "energy": "power_kw × pue × power_per_kwh × operating_hours_year × growth",
-        "staffing": "staff_fte × staff_annual_cost",
+        "growth_factor": "(1 + annual_growth_pct / 100) ** (year - 1)",
+        "compute": "accelerator_count x compute_hourly_cost x operating_hours_year x growth",
+        "storage": "storage_tb x storage_per_tb_month x 12 x growth",
+        "network": "network_egress_tb_month x 1,000 x network_per_gb x 12 x growth",
+        "energy": "power_kw x pue x power_per_kwh x operating_hours_year x growth",
+        "staffing": "staff_fte x staff_annual_cost",
         "transition": "migration_cost + implementation_cost in proposed year 1; otherwise 0",
         "recurring_total": "compute + storage + network + energy + staffing",
         "total": "recurring_total + transition",
     }
     paths = {
-        "compute": (f"{prefix}.accelerator_count", f"{prefix}.compute_hourly_cost", f"{prefix}.operating_hours_year", "workload.annual_growth_pct"),
-        "storage": (f"{prefix}.storage_tb", f"{prefix}.storage_per_tb_month", "workload.annual_growth_pct"),
-        "network": (f"{prefix}.network_egress_tb_month", f"{prefix}.network_per_gb", "workload.annual_growth_pct"),
-        "energy": (f"{prefix}.power_kw", f"{prefix}.pue", f"{prefix}.power_per_kwh", f"{prefix}.operating_hours_year", "workload.annual_growth_pct"),
+        "growth_factor": ("workload.annual_growth_pct",),
+        "compute": (
+            f"{prefix}.accelerator_count",
+            f"{prefix}.compute_hourly_cost",
+            f"{prefix}.operating_hours_year",
+            "workload.annual_growth_pct",
+        ),
+        "storage": (
+            f"{prefix}.storage_tb",
+            f"{prefix}.storage_per_tb_month",
+            "workload.annual_growth_pct",
+        ),
+        "network": (
+            f"{prefix}.network_egress_tb_month",
+            f"{prefix}.network_per_gb",
+            "workload.annual_growth_pct",
+        ),
+        "energy": (
+            f"{prefix}.power_kw",
+            f"{prefix}.pue",
+            f"{prefix}.power_per_kwh",
+            f"{prefix}.operating_hours_year",
+            "workload.annual_growth_pct",
+        ),
         "staffing": (f"{prefix}.staff_fte", f"{prefix}.staff_annual_cost"),
         "transition": ("migration_cost", "implementation_cost"),
         "recurring_total": ("derived annual components",),
         "total": ("derived recurring total", "derived transition cost"),
     }
+    return formulas, paths
+
+
+def _annual_lineage(
+    scenario: ScenarioInput, state_name: str, state: StateTCO
+) -> tuple[CalculationLineage, ...]:
+    formulas, paths = _annual_lineage_spec(f"{state_name}_infrastructure")
     return tuple(
-        _line(scenario, f"{state_name}.annual_costs[{annual.year}].{field}", formulas[field], paths[field], getattr(annual, field))
+        _line(
+            scenario,
+            f"{state_name}.annual_costs[{annual.year}].{field}",
+            formulas[field],
+            paths[field],
+            getattr(annual, field),
+        )
         for annual in state.annual_costs
         for field in formulas
     )
@@ -471,18 +528,40 @@ def _state_summary_lineage(
     scenario: ScenarioInput, state_name: str, state: StateTCO
 ) -> tuple[CalculationLineage, ...]:
     entries: tuple[tuple[str, str, Decimal | None], ...] = (
-        ("tco_3_year", "sum annual total for years 1–3", state.tco_3_year),
-        ("tco_5_year", "sum annual total for years 1–5", state.tco_5_year),
+        ("tco_3_year", "sum annual total for years 1-3", state.tco_3_year),
+        ("tco_5_year", "sum annual total for years 1-5", state.tco_5_year),
     )
     for years, units in ((3, state.unit_economics_3_year), (5, state.unit_economics_5_year)):
         entries += (
-            (f"unit_economics_{years}_year.recurring_cost", "sum recurring annual costs", units.recurring_cost),
-            (f"unit_economics_{years}_year.cost_per_training_run", "recurring cost ÷ total training runs", units.cost_per_training_run),
-            (f"unit_economics_{years}_year.cost_per_million_requests", "recurring cost ÷ total requests in millions", units.cost_per_million_requests),
-            (f"unit_economics_{years}_year.cost_per_productive_accelerator_hour", "recurring cost ÷ productive accelerator hours", units.cost_per_productive_accelerator_hour),
+            (
+                f"unit_economics_{years}_year.recurring_cost",
+                "sum recurring annual costs",
+                units.recurring_cost,
+            ),
+            (
+                f"unit_economics_{years}_year.cost_per_training_run",
+                "recurring cost ÷ total training runs",
+                units.cost_per_training_run,
+            ),
+            (
+                f"unit_economics_{years}_year.cost_per_million_requests",
+                "recurring cost ÷ total requests in millions",
+                units.cost_per_million_requests,
+            ),
+            (
+                f"unit_economics_{years}_year.cost_per_productive_accelerator_hour",
+                "recurring cost ÷ productive accelerator hours",
+                units.cost_per_productive_accelerator_hour,
+            ),
         )
     return tuple(
-        _line(scenario, f"{state_name}.{path}", formula, (f"{state_name}.annual_costs", "workload"), value)
+        _line(
+            scenario,
+            f"{state_name}.{path}",
+            formula,
+            (f"{state_name}.annual_costs", "workload"),
+            value,
+        )
         for path, formula, value in entries
     )
 
@@ -491,20 +570,30 @@ def _comparison_lineage(
     scenario: ScenarioInput, comparison: ScenarioComparison
 ) -> tuple[CalculationLineage, ...]:
     formulas = {
-        "savings_3_year": "current 3-year TCO − proposed 3-year TCO",
-        "savings_5_year": "current 5-year TCO − proposed 5-year TCO",
-        "savings_3_year_pct": "3-year savings ÷ current 3-year TCO × 100",
-        "savings_5_year_pct": "5-year savings ÷ current 5-year TCO × 100",
-        "productivity_value_3_year": "sum productivity value per hour × downtime hours × 12 × growth",
-        "productivity_value_5_year": "sum productivity value per hour × downtime hours × 12 × growth",
+        "savings_3_year": "current 3-year TCO - proposed 3-year TCO",
+        "savings_5_year": "current 5-year TCO - proposed 5-year TCO",
+        "savings_3_year_pct": "3-year savings / current 3-year TCO x 100",
+        "savings_5_year_pct": "5-year savings / current 5-year TCO x 100",
+        "productivity_value_3_year": (
+            "sum productivity value per hour x downtime hours x 12 x growth"
+        ),
+        "productivity_value_5_year": (
+            "sum productivity value per hour x downtime hours x 12 x growth"
+        ),
         "net_value_3_year": "3-year TCO savings + 3-year modeled productivity value",
         "net_value_5_year": "5-year TCO savings + 5-year modeled productivity value",
-        "roi_3_year_pct": "3-year net value ÷ proposed 3-year TCO × 100",
-        "roi_5_year_pct": "5-year net value ÷ proposed 5-year TCO × 100",
-        "payback_months": "transition investment ÷ cumulative modeled monthly operating benefit",
+        "roi_3_year_pct": "3-year net value / proposed 3-year TCO x 100",
+        "roi_5_year_pct": "5-year net value / proposed 5-year TCO x 100",
+        "payback_months": "transition investment / cumulative modeled monthly operating benefit",
         "break_even_within_5_years": "payback months exists and is no more than 60",
     }
-    inputs = ("current derived TCO", "proposed derived TCO", "workload.productivity_value_per_hour", "workload.downtime_hours_monthly", "workload.annual_growth_pct")
+    inputs = (
+        "current derived TCO",
+        "proposed derived TCO",
+        "workload.productivity_value_per_hour",
+        "workload.downtime_hours_monthly",
+        "workload.annual_growth_pct",
+    )
     return tuple(
         _line(scenario, f"comparison.{field}", formula, inputs, getattr(comparison, field))
         for field, formula in formulas.items()
@@ -524,7 +613,13 @@ def _sensitivity_lineage(
             "One-factor deterministic sensitivity; not a forecast or probability distribution.",
         )
         for case in sensitivities
-        for field in ("proposed_tco_5_year", "savings_5_year", "net_value_5_year", "roi_5_year_pct")
+        for field in (
+            "assumption_value",
+            "proposed_tco_5_year",
+            "savings_5_year",
+            "net_value_5_year",
+            "roi_5_year_pct",
+        )
     )
 
 
@@ -537,20 +632,42 @@ def _closing_lineage(
         ("score", confidence.score),
         ("source_coverage_pct", confidence.source_coverage_pct),
         ("contract_coverage_pct", confidence.contract_coverage_pct),
+        ("sourced_assumptions", confidence.sourced_assumptions),
+        ("material_assumptions", confidence.material_assumptions),
         ("level", confidence.level),
+        ("rationale", confidence.rationale),
     )
     summary_fields = (
-        "current_tco_3_year", "proposed_tco_3_year", "current_tco_5_year",
-        "proposed_tco_5_year", "savings_5_year", "productivity_value_5_year",
-        "net_value_5_year", "roi_5_year_pct", "payback_months", "confidence_level",
+        "current_tco_3_year",
+        "proposed_tco_3_year",
+        "current_tco_5_year",
+        "proposed_tco_5_year",
+        "savings_5_year",
+        "productivity_value_5_year",
+        "net_value_5_year",
+        "roi_5_year_pct",
+        "payback_months",
+        "confidence_level",
         "recommendation",
     )
     confidence_lines = tuple(
-        _line(scenario, f"confidence.{field}", "source coverage weighted 80% + contract coverage weighted 20%", ("assumption_sources", "contract_years"), value)
+        _line(
+            scenario,
+            f"confidence.{field}",
+            "source coverage weighted 80% + contract coverage weighted 20%",
+            ("assumption_sources", "contract_years"),
+            value,
+        )
         for field, value in confidence_items
     )
     summary_lines = tuple(
-        _line(scenario, f"executive_summary.{field}", "copy or interpret the corresponding modeled result", ("derived analysis result",), getattr(summary, field))
+        _line(
+            scenario,
+            f"executive_summary.{field}",
+            "copy or interpret the corresponding modeled result",
+            ("derived analysis result",),
+            getattr(summary, field),
+        )
         for field in summary_fields
     )
     return confidence_lines + summary_lines
@@ -586,12 +703,23 @@ def _executive_summary(
     if comparison.net_value_5_year > ZERO:
         recommendation = "Modeled financial advantage for the proposed infrastructure."
     else:
-        recommendation = "Modeled results do not show a financial advantage for the proposed infrastructure."
+        recommendation = (
+            "Modeled results do not show a financial advantage for the proposed infrastructure."
+        )
     return ExecutiveSummary(
-        scenario.name, current.tco_3_year, proposed.tco_3_year, current.tco_5_year,
-        proposed.tco_5_year, comparison.savings_5_year, comparison.productivity_value_5_year,
-        comparison.net_value_5_year, comparison.roi_5_year_pct, comparison.payback_months,
-        confidence.level, recommendation, DISCLAIMER
+        scenario.name,
+        current.tco_3_year,
+        proposed.tco_3_year,
+        current.tco_5_year,
+        proposed.tco_5_year,
+        comparison.savings_5_year,
+        comparison.productivity_value_5_year,
+        comparison.net_value_5_year,
+        comparison.roi_5_year_pct,
+        comparison.payback_months,
+        confidence.level,
+        recommendation,
+        DISCLAIMER,
     )
 
 
@@ -605,12 +733,18 @@ def calculate_analysis(payload: Mapping[str, Any]) -> AnalysisResult:
     sensitivities = _sensitivities(scenario, current)
     confidence = _confidence(scenario)
     summary = _executive_summary(scenario, current, proposed, comparison, confidence)
-    lineage = _lineage(
-        scenario, current, proposed, comparison, sensitivities, confidence, summary
-    )
+    lineage = _lineage(scenario, current, proposed, comparison, sensitivities, confidence, summary)
     return AnalysisResult(
-        scenario.name, scenario.description, scenario.comparison_type, current, proposed,
-        comparison, sensitivities, confidence, lineage, summary
+        scenario.name,
+        scenario.description,
+        scenario.comparison_type,
+        current,
+        proposed,
+        comparison,
+        sensitivities,
+        confidence,
+        lineage,
+        summary,
     )
 
 
