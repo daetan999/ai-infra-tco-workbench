@@ -26,7 +26,9 @@ costs apply only to the proposed case and are visible separately.
 cost per training run = annual run rate / annual training runs
 cost per million requests = annual run rate / annual request volume in millions
 cost per productive accelerator hour = annual run rate / productive accelerator hours
-net value = current-state TCO - proposed-state TCO
+TCO savings = current-state TCO - proposed-state TCO
+modeled productivity value = avoided downtime hours × productivity value per hour
+net value = TCO savings + modeled productivity value
 ROI = net value / proposed-state TCO
 payback = one-time investment / positive monthly operating benefit
 ```
