@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="500" viewBox="0 0 1400 500" role="img" aria-labelledby="title desc">
+  <title id="title">TCO workbench decision workflow</title>
+  <desc id="desc">Five stages move from workload and cost assumptions to comparison, sensitivity testing, and an executive decision brief.</desc>
+  <rect width="1400" height="500" rx="28" fill="#0b1118"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+    <text x="70" y="70" fill="#e8ae52" font-size="15" font-weight="700" letter-spacing="2.5">TRANSPARENT BUSINESS-CASE WORKFLOW</text>
+    <text x="70" y="112" fill="#f4f6f8" font-size="30" font-weight="740">Evidence before recommendation</text>
+    <g transform="translate(70 172)">
+      <g><rect width="226" height="190" rx="16" fill="#131d27" stroke="#344454"/><text x="20" y="34" fill="#e8ae52" font-size="12" font-weight="700">01 / WORKLOAD</text><text x="20" y="74" fill="#f4f6f8" font-size="19" font-weight="700">Set demand</text><text x="20" y="104" fill="#98a8ba" font-size="13">Model scale, runs,</text><text x="20" y="124" fill="#98a8ba" font-size="13">requests, peak &amp; growth</text><text x="20" y="160" fill="#52d6c1" font-size="12">Bounded inputs</text></g>
+      <path d="M226 95h34" stroke="#8c7248"/><path d="m260 95-8-5v10z" fill="#8c7248"/>
+      <g transform="translate(270)"><rect width="226" height="190" rx="16" fill="#131d27" stroke="#344454"/><text x="20" y="34" fill="#e8ae52" font-size="12" font-weight="700">02 / STATES</text><text x="20" y="74" fill="#f4f6f8" font-size="19" font-weight="700">Model both sides</text><text x="20" y="104" fill="#98a8ba" font-size="13">Compute, storage, network,</text><text x="20" y="124" fill="#98a8ba" font-size="13">energy and operations</text><text x="20" y="160" fill="#52d6c1" font-size="12">Current ↔ proposed</text></g>
+      <path d="M496 95h34" stroke="#8c7248"/><path d="m530 95-8-5v10z" fill="#8c7248"/>
+      <g transform="translate(540)"><rect width="226" height="190" rx="16" fill="#172028" stroke="#6f5935"/><text x="20" y="34" fill="#e8ae52" font-size="12" font-weight="700">03 / CALCULATE</text><text x="20" y="74" fill="#f4f6f8" font-size="19" font-weight="700">Trace the economics</text><text x="20" y="104" fill="#98a8ba" font-size="13">TCO, unit economics,</text><text x="20" y="124" fill="#98a8ba" font-size="13">payback and net value</text><text x="20" y="160" fill="#e8ae52" font-size="12">Decimal engine</text></g>
+      <path d="M766 95h34" stroke="#8c7248"/><path d="m800 95-8-5v10z" fill="#8c7248"/>
+      <g transform="translate(810)"><rect width="226" height="190" rx="16" fill="#131d27" stroke="#344454"/><text x="20" y="34" fill="#e8ae52" font-size="12" font-weight="700">04 / CHALLENGE</text><text x="20" y="74" fill="#f4f6f8" font-size="19" font-weight="700">Stress the case</text><text x="20" y="104" fill="#98a8ba" font-size="13">Utilization, price, growth</text><text x="20" y="124" fill="#98a8ba" font-size="13">and energy sensitivity</text><text x="20" y="160" fill="#52d6c1" font-size="12">Visible ranges</text></g>
+      <path d="M1036 95h34" stroke="#8c7248"/><path d="m1070 95-8-5v10z" fill="#8c7248"/>
+      <g transform="translate(1080)"><rect width="226" height="190" rx="16" fill="#131d27" stroke="#344454"/><text x="20" y="34" fill="#e8ae52" font-size="12" font-weight="700">05 / COMMUNICATE</text><text x="20" y="74" fill="#f4f6f8" font-size="19" font-weight="700">Frame the decision</text><text x="20" y="104" fill="#98a8ba" font-size="13">Confidence, lineage, CSV</text><text x="20" y="124" fill="#98a8ba" font-size="13">and executive PDF</text><text x="20" y="160" fill="#52d6c1" font-size="12">Advance or reshape</text></g>
+    </g>
+    <text x="70" y="430" fill="#76879a" font-size="13">Every result remains tied to user input, a public default, an illustrative assumption, or a derived calculation.</text>
+  </g>
+</svg>
