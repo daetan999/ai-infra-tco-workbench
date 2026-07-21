@@ -1,0 +1,18 @@
+services:
+  workbench:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      TCO_WORKBENCH_DB: /app/data/tco-workbench.db
+      SEED_DEMO_DATA: "true"
+    volumes:
+      - tco-workbench-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  tco-workbench-data:

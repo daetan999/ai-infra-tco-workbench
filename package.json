@@ -1,0 +1,12 @@
+{
+  "name": "ai-infra-tco-workbench-browser-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check static/app.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
