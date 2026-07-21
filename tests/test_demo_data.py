@@ -14,6 +14,10 @@ def test_demo_catalog_contains_exactly_three_named_fictional_scenarios() -> None
         "Cloud GPU vs owned infrastructure",
         "Shared serving utilization",
     ]
+    assert len({demo.model_dump_json() for demo in demos}) == 3
+    shared = demos[2]
+    assert shared.current_infrastructure.productive_utilization_pct == 35.0
+    assert shared.proposed_infrastructure.productive_utilization_pct == 72.0
 
 
 def test_demo_seed_is_idempotent(tmp_path, evaluator) -> None:

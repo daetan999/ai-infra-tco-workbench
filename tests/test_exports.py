@@ -24,7 +24,9 @@ def test_json_export_is_machine_readable(tmp_path, scenario_payload) -> None:
     assert payload["result"]["net_savings"] == 42.0
 
 
-def test_csv_export_flattens_fields_and_blocks_formula_injection(tmp_path, scenario_payload) -> None:
+def test_csv_export_flattens_fields_and_blocks_formula_injection(
+    tmp_path, scenario_payload
+) -> None:
     scenario_payload["name"] = "=HYPERLINK(\"https://unsafe.example\")"
     analysis = stored_analysis(tmp_path, scenario_payload)
 

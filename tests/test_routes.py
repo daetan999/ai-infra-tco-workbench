@@ -56,7 +56,9 @@ def test_exports_have_safe_content_dispositions(tmp_path, evaluator, scenario_pa
         assert pdf_response.content.startswith(b"%PDF-")
 
 
-def test_validation_and_missing_records_use_error_envelopes(tmp_path, evaluator, scenario_payload) -> None:
+def test_validation_and_missing_records_use_error_envelopes(
+    tmp_path, evaluator, scenario_payload
+) -> None:
     with client_for(tmp_path, evaluator) as client:
         scenario_payload["contract_years"] = 0
         validation = client.post("/api/scenarios", json=scenario_payload)
@@ -86,3 +88,15 @@ def test_unexpected_errors_are_redacted(tmp_path, scenario_payload) -> None:
         "message": "An unexpected error occurred.",
     }
     assert "hunter2" not in response.text
+
+
+def test_default_adapter_evaluates_with_the_real_financial_engine(
+    tmp_path, scenario_payload
+) -> None:
+    with TestClient(create_app(db_path=tmp_path / "analysis.db")) as client:
+        response = client.post("/api/scenarios", json=scenario_payload)
+
+    assert response.status_code == 201
+    result = response.json()["data"]["result"]
+    assert result["executive_summary"]["scenario_name"] == "Inference modernization"
+    assert result["comparison"]["disclaimer"]

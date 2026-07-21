@@ -4,7 +4,9 @@ from app.repository import AnalysisRepository
 from app.schemas import ScenarioInput
 
 
-def test_repository_appends_versions_without_mutating_prior_runs(tmp_path, scenario_payload) -> None:
+def test_repository_appends_versions_without_mutating_prior_runs(
+    tmp_path, scenario_payload
+) -> None:
     repository = AnalysisRepository(tmp_path / "analysis.db")
     initial = ScenarioInput.model_validate(scenario_payload)
     created = repository.create(initial, {"total": 100.0})
@@ -23,7 +25,9 @@ def test_repository_appends_versions_without_mutating_prior_runs(tmp_path, scena
     assert [run.version for run in repository.list_versions(created.scenario_id)] == [2, 1]
 
 
-def test_repository_lists_latest_runs_and_soft_deletes_scenarios(tmp_path, scenario_payload) -> None:
+def test_repository_lists_latest_runs_and_soft_deletes_scenarios(
+    tmp_path, scenario_payload
+) -> None:
     repository = AnalysisRepository(tmp_path / "nested" / "analysis.db")
     scenario = ScenarioInput.model_validate(scenario_payload)
     first = repository.create(scenario, {"total": 100.0})
