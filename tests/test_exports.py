@@ -4,6 +4,9 @@ import csv
 import io
 import json
 
+from pypdf import PdfReader
+
+from app.engine import evaluate_financial_scenario
 from app.exports import export_csv, export_json, export_pdf
 from app.repository import AnalysisRepository
 from app.schemas import ScenarioInput
@@ -27,7 +30,7 @@ def test_json_export_is_machine_readable(tmp_path, scenario_payload) -> None:
 def test_csv_export_flattens_fields_and_blocks_formula_injection(
     tmp_path, scenario_payload
 ) -> None:
-    scenario_payload["name"] = "=HYPERLINK(\"https://unsafe.example\")"
+    scenario_payload["name"] = '=HYPERLINK("https://unsafe.example")'
     analysis = stored_analysis(tmp_path, scenario_payload)
 
     rows = list(csv.reader(io.StringIO(export_csv(analysis))))
@@ -39,9 +42,22 @@ def test_csv_export_flattens_fields_and_blocks_formula_injection(
 
 
 def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
-    analysis = stored_analysis(tmp_path, scenario_payload)
+    repository = AnalysisRepository(tmp_path / "analysis.db")
+    scenario = ScenarioInput.model_validate(scenario_payload)
+    result = evaluate_financial_scenario(scenario.model_dump(mode="json"))
+    analysis = repository.create(scenario, result)
 
     document = export_pdf(analysis)
+    reader = PdfReader(io.BytesIO(document))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
 
     assert document.startswith(b"%PDF-")
-    assert len(document) > 1000
+    assert len(document) > 5000
+    assert len(reader.pages) >= 3
+    assert "Executive summary" in text
+    assert "Five-year comparison" in text
+    assert "Sensitivity analysis" in text
+    assert "Calculation lineage" in text
+    assert "Fictional demonstration" in text
+    assert "not a guarantee" in text
+    assert "Page 1" in text

@@ -41,6 +41,7 @@ def serialize(analysis: StoredAnalysis) -> dict[str, Any]:
 def create_router(repository: AnalysisRepository, evaluator: Evaluator) -> APIRouter:
     """Build a router with explicit local dependencies."""
     router = APIRouter(prefix="/api/scenarios", tags=["scenarios"])
+
     @router.get("")
     def list_scenarios() -> dict[str, Any]:
         return success([serialize(item) for item in repository.list_latest()])
@@ -66,6 +67,11 @@ def create_router(repository: AnalysisRepository, evaluator: Evaluator) -> APIRo
             raise _not_found()
         return success({"scenario_id": str(scenario_id), "deleted": True})
 
+    _register_history_routes(router, repository)
+    return router
+
+
+def _register_history_routes(router: APIRouter, repository: AnalysisRepository) -> None:
     @router.get("/{scenario_id}/versions")
     def list_versions(scenario_id: UUID) -> dict[str, Any]:
         versions = repository.list_versions(str(scenario_id))
@@ -85,8 +91,6 @@ def create_router(repository: AnalysisRepository, evaluator: Evaluator) -> APIRo
     ) -> Response:
         analysis = _require(repository.get_latest(str(scenario_id)))
         return _export_response(analysis, export_format)
-
-    return router
 
 
 def _evaluate(evaluator: Evaluator, scenario: ScenarioInput) -> dict[str, Any]:
