@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101a24">
+    <meta name="description" content="Evidence-led AI infrastructure TCO scenario workbench">
+    <title>Northstar TCO Workbench</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#analysis">Skip to decision analysis</a>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Northstar TCO Workbench home">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>
+          <strong>Northstar</strong>
+          <small>TCO workbench</small>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <div class="sync-state" id="sync-state" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="sync-label">Draft synced</span>
+        </div>
+        <button class="button button-quiet" id="export-button" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span aria-hidden="true">⇩</span> Export
+        </button>
+        <div class="export-menu" id="export-menu" role="menu" hidden>
+          <a href="#" data-export="pdf" role="menuitem">Board memo · PDF</a>
+          <a href="#" data-export="csv" role="menuitem">Model detail · CSV</a>
+          <a href="#" data-export="json" role="menuitem">Scenario data · JSON</a>
+        </div>
+        <button class="button button-primary" id="save-button" type="submit" form="scenario-form">
+          Save scenario
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="scenario-rail" aria-label="Scenario workspace">
+        <div class="rail-heading">
+          <div>
+            <p class="eyebrow">Portfolio</p>
+            <h2>Scenarios</h2>
+          </div>
+          <button class="icon-button" id="new-scenario" type="button" aria-label="Create new scenario">+</button>
+        </div>
+
+        <label class="search-field" for="scenario-search">
+          <span aria-hidden="true">⌕</span>
+          <span class="sr-only">Search scenarios</span>
+          <input id="scenario-search" type="search" placeholder="Find a scenario" autocomplete="off">
+        </label>
+
+        <div class="scenario-state" id="scenario-loading" role="status">
+          <span class="spinner" aria-hidden="true"></span> Loading scenarios…
+        </div>
+        <div class="scenario-state state-error" id="scenario-error" role="alert" hidden>
+          <strong>Scenarios unavailable</strong>
+          <span id="scenario-error-message">Check the service and try again.</span>
+          <button class="text-button" id="retry-scenarios" type="button">Retry</button>
+        </div>
+        <div class="scenario-state" id="scenario-empty" hidden>
+          <strong>No scenarios yet</strong>
+          <span>Start with a blank, evidence-ready model.</span>
+        </div>
+        <nav class="scenario-list" id="scenario-list" aria-label="Saved scenarios"></nav>
+
+        <section class="rail-note" aria-label="Model posture">
+          <span class="rail-note-icon" aria-hidden="true">◎</span>
+          <div>
+            <strong>Evidence posture</strong>
+            <p>Indicative decision support. Inputs remain hypotheses until sources are verified.</p>
+          </div>
+        </section>
+      </aside>
+
+      <main id="analysis" class="workspace" aria-label="Decision analysis" tabindex="-1">
+        <div class="workspace-heading">
+          <div>
+            <div class="title-row">
+              <span class="status-pill">Working hypothesis</span>
+              <span class="updated-label" id="updated-label">Not yet saved</span>
+            </div>
+            <h1 id="scenario-title">Untitled infrastructure decision</h1>
+            <p>Compare the economics, operating exposure, and evidence quality behind a proposed AI infrastructure move.</p>
+          </div>
+          <button class="button button-danger-quiet" id="delete-scenario" type="button" hidden>Delete</button>
+        </div>
+
+        <div class="notice" role="note">
+          <span aria-hidden="true">i</span>
+          <p><strong>Fictional demonstration model.</strong> Outputs are indicative hypotheses, not financial advice or guaranteed ROI. Validate assumptions before making a commitment.</p>
+        </div>
+
+        <nav class="section-nav" aria-label="Analysis sections">
+          <a href="#model-inputs">Model inputs</a>
+          <a href="#comparison">Comparison</a>
+          <a href="#sensitivity">Sensitivity</a>
+          <a href="#calculation-lineage">Lineage</a>
+          <a href="#executive-summary">Summary</a>
+        </nav>
+
+        <form id="scenario-form">
+          <section class="section-block" id="model-inputs" aria-labelledby="model-inputs-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">01 · Define the decision</p>
+                <h2 id="model-inputs-heading">Side-by-side model builder</h2>
+                <p>Normalize each operating state to the same workload and horizon.</p>
+              </div>
+              <span class="status-pill quiet">All values USD</span>
+            </div>
+
+            <div class="scenario-meta-grid">
+              <label><span>Scenario name</span><input id="scenario-name" name="name" value="Untitled infrastructure decision" maxlength="96" required></label>
+              <label><span>Decision description</span><input name="description" value="Evaluate a fictional managed accelerator platform." maxlength="240" required></label>
+              <label><span>Comparison type</span><select name="comparison_type"><option value="build_vs_buy">Build vs buy</option><option value="current_vs_proposed" selected>Current vs proposed</option><option value="vendor_comparison">Vendor comparison</option></select></label>
+            </div>
+
+            <details class="workload-panel" open>
+              <summary><span><strong>Shared workload envelope</strong><small>Demand and business-impact assumptions applied to both states</small></span><span aria-hidden="true">⌄</span></summary>
+              <div class="field-grid workload-grid">
+                <label><span>Workload type</span><select name="workload.workload_type"><option value="inference" selected>Inference</option><option value="training">Training</option><option value="hybrid">Hybrid</option></select></label>
+                <label><span>Model size</span><span class="input-suffix"><input name="workload.model_size_billion" type="number" min="0.1" step="0.1" value="70" required><b>B params</b></span></label>
+                <label><span>Training runs / month</span><input name="workload.training_runs_per_month" type="number" min="0" step="1" value="4" required></label>
+                <label><span>Monthly requests</span><span class="input-suffix"><input name="workload.monthly_requests_million" type="number" min="0.01" step="0.01" value="240" required><b>M</b></span></label>
+                <label><span>Average demand units</span><input name="workload.average_demand_units" type="number" min="0" step="1" value="38" required></label>
+                <label><span>Peak demand units</span><input name="workload.peak_demand_units" type="number" min="0" step="1" value="64" required></label>
+                <label><span>Annual demand growth</span><span class="input-suffix"><input name="workload.annual_growth_pct" type="number" min="-50" max="200" step="0.1" value="18" required><b>%</b></span></label>
+                <label><span>Productivity value / hour</span><span class="input-prefix"><b>$</b><input name="workload.productivity_value_per_hour" type="number" min="0" step="1" value="85" required></span></label>
+                <label><span>Downtime / month</span><span class="input-suffix"><input name="workload.downtime_hours_monthly" type="number" min="0" max="744" step="0.1" value="11" required><b>hrs</b></span></label>
+              </div>
+            </details>
+
+            <div class="builder-grid">
+              <fieldset class="model-card" id="current-state">
+                <legend>
+                  <span class="model-index current">A</span>
+                  <span><small>Reference state</small>Current estate</span>
+                </legend>
+                <div class="field-grid">
+                  <label><span>State label</span><input name="current.label" value="Current estate" maxlength="64" required></label>
+                  <label><span>Infrastructure type</span><select name="current.infrastructure_type"><option value="cloud">Public cloud</option><option value="on_premise" selected>On-premises</option><option value="colocation">Colocation</option><option value="managed">Managed platform</option></select></label>
+                  <label><span>Accelerator count</span><input name="current.accelerator_count" type="number" min="1" step="1" value="64" required></label>
+                  <label><span>Compute / accelerator-hour</span><span class="input-prefix"><b>$</b><input name="current.compute_hourly_cost" type="number" min="0" step="0.01" value="4.10" required></span></label>
+                  <label><span>Productive utilization</span><span class="input-suffix"><input name="current.productive_utilization_pct" type="number" min="1" max="100" step="0.1" value="42" required><b>%</b></span></label>
+                  <label><span>Operating hours / year</span><input name="current.operating_hours_year" type="number" min="1" max="8784" step="1" value="8760" required></label>
+                </div>
+                <details class="advanced-inputs"><summary>Storage, network, power &amp; people <span aria-hidden="true">⌄</span></summary><div class="field-grid">
+                  <label><span>Storage capacity</span><span class="input-suffix"><input name="current.storage_tb" type="number" min="0" step="1" value="420" required><b>TB</b></span></label>
+                  <label><span>Storage / TB-month</span><span class="input-prefix"><b>$</b><input name="current.storage_per_tb_month" type="number" min="0" step="0.01" value="19" required></span></label>
+                  <label><span>Network egress / month</span><span class="input-suffix"><input name="current.network_egress_tb_month" type="number" min="0" step="0.1" value="52" required><b>TB</b></span></label>
+                  <label><span>Network / GB</span><span class="input-prefix"><b>$</b><input name="current.network_per_gb" type="number" min="0" step="0.001" value="0.06" required></span></label>
+                  <label><span>IT load</span><span class="input-suffix"><input name="current.power_kw" type="number" min="0" step="0.1" value="115" required><b>kW</b></span></label>
+                  <label><span>PUE</span><input name="current.pue" type="number" min="1" max="3" step="0.01" value="1.48" required></label>
+                  <label><span>Power / kWh</span><span class="input-prefix"><b>$</b><input name="current.power_per_kwh" type="number" min="0" step="0.001" value="0.13" required></span></label>
+                  <label><span>Operations staff</span><span class="input-suffix"><input name="current.staff_fte" type="number" min="0" step="0.1" value="5" required><b>FTE</b></span></label>
+                  <label><span>Loaded cost / FTE</span><span class="input-prefix"><b>$</b><input name="current.staff_annual_cost" type="number" min="0" step="1000" value="152000" required></span></label>
+                </div></details>
+              </fieldset>
+
+              <fieldset class="model-card proposed" id="proposed-state">
+                <legend>
+                  <span class="model-index proposed">B</span>
+                  <span><small>Candidate state</small>Proposed platform</span>
+                </legend>
+                <div class="field-grid">
+                  <label><span>State label</span><input name="proposed.label" value="Proposed platform" maxlength="64" required></label>
+                  <label><span>Infrastructure type</span><select name="proposed.infrastructure_type"><option value="cloud">Public cloud</option><option value="on_premise">On-premises</option><option value="colocation">Colocation</option><option value="managed" selected>Managed platform</option></select></label>
+                  <label><span>Accelerator count</span><input name="proposed.accelerator_count" type="number" min="1" step="1" value="48" required></label>
+                  <label><span>Compute / accelerator-hour</span><span class="input-prefix"><b>$</b><input name="proposed.compute_hourly_cost" type="number" min="0" step="0.01" value="3.35" required></span></label>
+                  <label><span>Productive utilization</span><span class="input-suffix"><input name="proposed.productive_utilization_pct" type="number" min="1" max="100" step="0.1" value="68" required><b>%</b></span></label>
+                  <label><span>Operating hours / year</span><input name="proposed.operating_hours_year" type="number" min="1" max="8784" step="1" value="8760" required></label>
+                </div>
+                <details class="advanced-inputs"><summary>Storage, network, power &amp; people <span aria-hidden="true">⌄</span></summary><div class="field-grid">
+                  <label><span>Storage capacity</span><span class="input-suffix"><input name="proposed.storage_tb" type="number" min="0" step="1" value="350" required><b>TB</b></span></label>
+                  <label><span>Storage / TB-month</span><span class="input-prefix"><b>$</b><input name="proposed.storage_per_tb_month" type="number" min="0" step="0.01" value="23" required></span></label>
+                  <label><span>Network egress / month</span><span class="input-suffix"><input name="proposed.network_egress_tb_month" type="number" min="0" step="0.1" value="42" required><b>TB</b></span></label>
+                  <label><span>Network / GB</span><span class="input-prefix"><b>$</b><input name="proposed.network_per_gb" type="number" min="0" step="0.001" value="0.045" required></span></label>
+                  <label><span>IT load</span><span class="input-suffix"><input name="proposed.power_kw" type="number" min="0" step="0.1" value="82" required><b>kW</b></span></label>
+                  <label><span>PUE</span><input name="proposed.pue" type="number" min="1" max="3" step="0.01" value="1.22" required></label>
+                  <label><span>Power / kWh</span><span class="input-prefix"><b>$</b><input name="proposed.power_per_kwh" type="number" min="0" step="0.001" value="0.13" required></span></label>
+                  <label><span>Operations staff</span><span class="input-suffix"><input name="proposed.staff_fte" type="number" min="0" step="0.1" value="3" required><b>FTE</b></span></label>
+                  <label><span>Loaded cost / FTE</span><span class="input-prefix"><b>$</b><input name="proposed.staff_annual_cost" type="number" min="0" step="1000" value="168000" required></span></label>
+                </div></details>
+              </fieldset>
+            </div>
+
+            <div class="transition-grid">
+              <label><span>Migration cost</span><span class="input-prefix"><b>$</b><input name="migration_cost" type="number" min="0" step="1000" value="420000" required></span></label>
+              <label><span>Implementation cost</span><span class="input-prefix"><b>$</b><input name="implementation_cost" type="number" min="0" step="1000" value="260000" required></span></label>
+              <label><span>Contract term</span><span class="input-suffix"><input name="contract_years" type="number" min="1" max="10" step="1" value="3" required><b>years</b></span></label>
+            </div>
+
+            <section class="assumptions-panel" aria-labelledby="assumptions-heading">
+              <div class="subsection-heading">
+                <div>
+                  <h3 id="assumptions-heading">Assumption provenance</h3>
+                  <p>Record what the model believes and why it is credible.</p>
+                </div>
+                <button class="button button-quiet" id="add-assumption" type="button">+ Add assumption</button>
+              </div>
+              <div class="table-scroll" tabindex="0" aria-label="Scrollable assumption provenance table">
+                <table>
+                  <thead>
+                    <tr><th>Assumption</th><th>Value</th><th>Source / evidence</th><th>Confidence</th><th><span class="sr-only">Actions</span></th></tr>
+                  </thead>
+                  <tbody id="assumption-rows"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="section-block" id="comparison" aria-labelledby="comparison-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">02 · Read the economics</p>
+                <h2 id="comparison-heading">Decision comparison</h2>
+                <p>Saved outputs come from the deterministic engine; edited inputs are marked as a draft preview.</p>
+              </div>
+              <div class="comparison-controls"><span class="status-pill quiet" id="analysis-source-label">Draft preview</span><label class="horizon-control" for="horizon-select"><span>Primary horizon</span><select id="horizon-select" name="horizon"><option value="3">3 years</option><option value="5" selected>5 years</option></select></label></div>
+            </div>
+
+            <div class="metric-grid" aria-live="polite">
+              <article class="metric-card featured">
+                <span class="metric-label" id="net-impact-label">5-year net impact</span>
+                <strong id="net-impact">—</strong>
+                <span class="metric-context" id="net-impact-context">Awaiting valid inputs</span>
+              </article>
+              <article class="metric-card">
+                <span class="metric-label">Payback period</span>
+                <strong id="payback-period">—</strong>
+                <span class="metric-context">Simple, undiscounted</span>
+              </article>
+              <article class="metric-card">
+                <span class="metric-label">Cost / 1M requests</span>
+                <strong id="unit-economics">—</strong>
+                <span class="metric-context" id="unit-economics-context">Proposed state</span>
+              </article>
+              <article class="metric-card">
+                <span class="metric-label">Evidence confidence</span>
+                <strong id="confidence-score">—</strong>
+                <span class="metric-context">Across stated assumptions</span>
+              </article>
+            </div>
+
+            <div class="analysis-grid">
+              <article class="chart-card">
+                <div class="card-heading">
+                  <div><span class="kicker">Cumulative cost</span><h3>3-year TCO and 5-year TCO</h3></div>
+                  <div class="legend"><span><i class="swatch current"></i>Current</span><span><i class="swatch proposed"></i>Proposed</span></div>
+                </div>
+                <div class="tco-chart" id="tco-chart" role="img" aria-label="Current and proposed total cost comparison over five years"></div>
+                <div class="chart-summary" id="chart-summary"></div>
+              </article>
+
+              <article class="break-even-card">
+                <div class="card-heading"><div><span class="kicker">Capital recovery</span><h3>Break-even / payback</h3></div></div>
+                <div class="payback-visual">
+                  <div class="payback-ring" id="payback-ring"><strong id="payback-ring-value">—</strong><span>months</span></div>
+                  <p id="payback-narrative">Enter a lower proposed run rate to reveal the recovery window.</p>
+                </div>
+                <dl class="compact-metrics">
+                  <div><dt>Upfront investment</dt><dd id="upfront-cost">—</dd></div>
+                  <div><dt>Annual run-rate delta</dt><dd id="run-rate-delta">—</dd></div>
+                </dl>
+              </article>
+            </div>
+
+            <article class="unit-card">
+              <div class="card-heading"><div><span class="kicker">Normalized view</span><h3>Unit economics</h3></div><span class="status-pill quiet">Comparable units</span></div>
+              <div class="table-scroll" tabindex="0" aria-label="Scrollable unit economics comparison">
+                <table>
+                  <thead><tr><th>Measure</th><th>Current estate</th><th>Proposed platform</th><th>Variance</th></tr></thead>
+                  <tbody id="unit-economics-table"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="section-block" id="sensitivity" aria-labelledby="sensitivity-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow">03 · Stress the thesis</p><h2 id="sensitivity-heading">Sensitivity studio</h2><p>Challenge the case before the steering committee does.</p></div>
+              <button class="button button-quiet" id="reset-sensitivity" type="button">Reset levers</button>
+            </div>
+            <div class="sensitivity-grid">
+              <div class="lever-panel">
+                <label for="sensitivity-growth"><span>Annual demand growth</span><output id="sensitivity-growth-output">18%</output></label>
+                <input id="sensitivity-growth" type="range" min="-20" max="100" value="18" step="1">
+                <label for="sensitivity-utilization"><span>Proposed utilization</span><output id="sensitivity-utilization-output">68%</output></label>
+                <input id="sensitivity-utilization" type="range" min="30" max="95" value="68" step="1">
+                <label for="sensitivity-price"><span>Accelerator unit price</span><output id="sensitivity-price-output">100%</output></label>
+                <input id="sensitivity-price" type="range" min="70" max="140" value="100" step="5">
+              </div>
+              <article class="tornado-card">
+                <div class="card-heading"><div><span class="kicker">One-variable stress</span><h3>Impact range on 5-year case</h3></div><span class="range-key">Low ↔ High</span></div>
+                <div id="tornado-chart" class="tornado-chart" role="img" aria-label="Sensitivity of five-year impact to key assumptions"></div>
+                <p class="microcopy">Ranges are illustrative ±20% shocks, holding other inputs constant.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" id="calculation-lineage" aria-labelledby="lineage-heading">
+            <div class="section-heading"><div><p class="eyebrow">04 · Audit the arithmetic</p><h2 id="lineage-heading">Calculation lineage</h2><p>Trace headline outcomes to their inputs and formulas.</p></div></div>
+            <div class="lineage-grid" id="lineage-grid"></div>
+          </section>
+
+          <section class="section-block summary-section" id="executive-summary" aria-labelledby="summary-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow">05 · Frame the decision</p><h2 id="summary-heading">Executive summary</h2><p>A concise, evidence-aware narrative for review—not a promise of returns.</p></div>
+              <button class="button button-quiet" id="copy-summary" type="button">Copy summary</button>
+            </div>
+            <div class="summary-grid">
+              <article class="summary-copy">
+                <span class="kicker">Decision brief</span>
+                <h3 id="summary-headline">Complete the model to generate a decision brief.</h3>
+                <ul id="summary-points"></ul>
+              </article>
+              <aside class="decision-gate" aria-label="Decision gate">
+                <span class="gate-icon" aria-hidden="true">◇</span>
+                <div><span class="kicker">Recommended next gate</span><strong id="decision-gate-label">Validate critical assumptions</strong><p id="decision-gate-detail">Confirm pricing, workload forecasts, and transition scope with accountable owners.</p></div>
+              </aside>
+            </div>
+          </section>
+        </form>
+      </main>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <form method="dialog">
+        <span class="dialog-icon" aria-hidden="true">!</span>
+        <h2 id="confirm-title">Discard unsaved changes?</h2>
+        <p id="confirm-message">Your current draft has changes that have not been saved.</p>
+        <div class="dialog-actions">
+          <button class="button button-quiet" value="cancel">Keep editing</button>
+          <button class="button button-danger" id="confirm-action" value="confirm">Discard changes</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
