@@ -230,6 +230,20 @@ def _assumptions_story(
     current = _mapping_value(payload, "current_infrastructure")
     proposed = _mapping_value(payload, "proposed_infrastructure")
     sources = payload.get("assumption_sources", {})
+    training_fields = (
+        ("training_runs_per_month",)
+        if str(workload.get("workload_type", "")).lower() in {"training", "hybrid"}
+        else ()
+    )
+    workload_fields = (
+        "workload_type",
+        "model_size_billion",
+        *training_fields,
+        "monthly_requests_million",
+        "average_demand_units",
+        "peak_demand_units",
+        "annual_growth_pct",
+    )
     return (
         Paragraph("Scenario assumptions", styles["h1"]),
         Paragraph(
@@ -239,19 +253,7 @@ def _assumptions_story(
         ),
         Spacer(1, 10),
         Paragraph("Workload envelope", styles["h2"]),
-        _mapping_table(
-            workload,
-            styles,
-            (
-                "workload_type",
-                "model_size_billion",
-                "training_runs_per_month",
-                "monthly_requests_million",
-                "average_demand_units",
-                "peak_demand_units",
-                "annual_growth_pct",
-            ),
-        ),
+        _mapping_table(workload, styles, workload_fields),
         Spacer(1, 16),
         Paragraph("Current and proposed states", styles["h2"]),
         _infrastructure_table(current, proposed),
@@ -595,10 +597,13 @@ def _yes_no(value: Any) -> str:
 
 def _sources_text(sources: Any) -> str:
     if isinstance(sources, Mapping):
-        return "; ".join(_source_label(value) for value in sources.values())
-    if isinstance(sources, Sequence) and not isinstance(sources, (str, bytes)):
-        return "; ".join(_source_label(item) for item in sources)
-    return "No sources recorded"
+        values = sources.values()
+    elif isinstance(sources, Sequence) and not isinstance(sources, (str, bytes)):
+        values = sources
+    else:
+        return "No sources recorded"
+    labels = tuple(dict.fromkeys(_source_label(value) for value in values))
+    return "; ".join(labels)
 
 
 def _source_label(value: Any) -> str:

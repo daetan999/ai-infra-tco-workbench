@@ -47,7 +47,10 @@ def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
     scenario_payload["assumption_sources"] = {
         "current_infrastructure.compute_hourly_cost": (
             f"Fictional invoice | workbench-meta:{metadata}"
-        )
+        ),
+        "proposed_infrastructure.compute_hourly_cost": (
+            f"Fictional invoice | workbench-meta:{metadata}"
+        ),
     }
     repository = AnalysisRepository(tmp_path / "analysis.db")
     scenario = ScenarioInput.model_validate(scenario_payload)
@@ -70,4 +73,6 @@ def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
     assert "not a guarantee" in text
     assert "Page 1" in text
     assert "Fictional invoice (high confidence)" in normalized_text
+    assert normalized_text.count("Fictional invoice (high confidence)") == 1
+    assert "Training Runs Per Month" not in normalized_text
     assert "workbench-meta" not in text
