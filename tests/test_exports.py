@@ -66,6 +66,10 @@ def test_pdf_export_produces_a_real_pdf(tmp_path, scenario_payload) -> None:
     assert len(document) > 5000
     assert len(reader.pages) >= 3
     assert "Executive summary" in text
+    assert "VALIDATION REQUIRED" in normalized_text
+    assert "Priority evidence gaps" in normalized_text
+    assert "Strongest sensitivities" in normalized_text
+    assert "Modeled ROI (net value / proposed-state TCO)" in normalized_text
     assert "Five-year comparison" in text
     assert "Sensitivity analysis" in text
     assert "Calculation lineage" in text

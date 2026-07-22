@@ -186,6 +186,10 @@ def test_client_consumes_saved_analysis_envelope_and_engine_outputs(
     assert "result.sensitivities" in script
     assert "result.lineage" in script
     assert "result.executive_summary" in script
+    assert "model.summary?.decision_posture" in script
+    assert "model.summary?.required_next_action" in script
+    assert "model.summary?.priority_evidence_gaps" in script
+    assert "model.summary?.strongest_sensitivities" in script
 
 
 def test_pure_browser_contract_handles_real_envelopes_and_finance(

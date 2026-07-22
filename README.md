@@ -50,6 +50,12 @@ The implementation is a focused FastAPI modular monolith:
 
 See [architecture](docs/architecture.md), [financial methodology](docs/methodology.md), and [modeling guardrails](docs/guardrails.md) for the design invariants and operating boundary.
 
+## Design Decisions
+
+- **Calculate with Decimal code, not generated narrative.** Reviewers can reproduce formulas and rounding. The model cannot invent missing context; approved assumptions or a revised scenario must supply it.
+- **Preserve immutable analysis versions.** A reviewed result never changes when inputs or policy evolve. Version history uses more storage and requires explicit revision; an approved retention policy can archive old runs without rewriting them.
+- **Gate recommendations by evidence confidence.** Low-confidence inputs can produce arithmetic but cannot support investment approval. This may delay an attractive case; sourced workload, pricing, implementation, and contract evidence can move it to conditional or decision review.
+
 ## Bundled fictional scenarios
 
 When `SEED_DEMO_DATA=true`, an empty database receives exactly three demonstrations:

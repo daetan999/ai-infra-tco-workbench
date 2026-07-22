@@ -163,12 +163,16 @@ def test_non_positive_modeled_benefits_have_no_payback() -> None:
         "staff_fte": 2,
     }
 
-    comparison = calculate_analysis(payload).comparison
+    result = calculate_analysis(payload)
+    comparison = result.comparison
 
     assert comparison.net_value_5_year < 0
     assert comparison.roi_5_year_pct < 0
     assert comparison.payback_months is None
     assert comparison.break_even_within_5_years is False
+    assert result.executive_summary.recommendation.startswith(
+        "Modeled results do not show a financial advantage"
+    )
 
 
 def test_sensitivities_cover_all_requested_dimensions_and_order_risk() -> None:
@@ -259,6 +263,59 @@ def test_confidence_labels_weight_authoritative_source_coverage() -> None:
     assert "workbench-meta" not in high.lineage[1].source_refs[1]
 
 
+@pytest.mark.parametrize(
+    ("confidence_label", "expected_level", "expected_posture", "expected_recommendation"),
+    (
+        (
+            "medium",
+            "Medium",
+            "CONDITIONAL_REVIEW",
+            "The model supports conditional review.",
+        ),
+        (
+            "high",
+            "High",
+            "DECISION_REVIEW_READY",
+            "Evidence coverage supports decision review",
+        ),
+    ),
+)
+def test_evidence_confidence_controls_the_decision_posture(
+    confidence_label: str,
+    expected_level: str,
+    expected_posture: str,
+    expected_recommendation: str,
+) -> None:
+    payload = scenario_payload()
+    metadata = quote(json.dumps({"value": "verified", "confidence": confidence_label}))
+    source = f"Review evidence | workbench-meta:{metadata}"
+    sources: dict[str, str] = {}
+    for section in ("workload", "current_infrastructure", "proposed_infrastructure"):
+        values = payload[section]
+        assert isinstance(values, dict)
+        sources.update(
+            {
+                f"{section}.{field}": source
+                for field, value in values.items()
+                if isinstance(value, (int, float)) and value != 0
+            }
+        )
+    sources.update(
+        {
+            "migration_cost": source,
+            "implementation_cost": source,
+            "contract_years": source,
+        }
+    )
+    payload["assumption_sources"] = sources
+
+    summary = calculate_analysis(payload).executive_summary
+
+    assert summary.confidence_level == expected_level
+    assert summary.decision_posture == expected_posture
+    assert summary.recommendation.startswith(expected_recommendation)
+
+
 def test_result_is_immutable_deterministic_and_does_not_mutate_input() -> None:
     payload = scenario_payload()
     original = deepcopy(payload)
@@ -325,7 +382,18 @@ def test_executive_summary_exposes_decision_ready_metrics() -> None:
     assert summary.current_tco_3_year == result.current.tco_3_year
     assert summary.proposed_tco_5_year == result.proposed.tco_5_year
     assert summary.net_value_5_year == result.comparison.net_value_5_year
-    assert summary.recommendation.startswith("Modeled")
+    assert summary.decision_posture == "VALIDATION_REQUIRED"
+    assert summary.recommendation == (
+        "Evidence is insufficient for investment approval. Validate the highest-impact "
+        "assumptions before using this comparison to select an option."
+    )
+    assert summary.required_next_action == (
+        "Resolve the priority evidence gaps and rerun the comparison before investment review."
+    )
+    assert len(summary.priority_evidence_gaps) == 3
+    assert "proposed_infrastructure.accelerator_count" in summary.priority_evidence_gaps
+    assert len(summary.strongest_sensitivities) == 3
+    assert summary.strongest_sensitivities[0] in {"utilization", "price", "growth", "energy"}
     assert result.to_dict()["comparison"]["savings_5_year"] == 172394.12
 
 

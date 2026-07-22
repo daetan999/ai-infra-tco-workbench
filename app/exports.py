@@ -125,7 +125,6 @@ def _pdf_story(analysis: StoredAnalysis) -> tuple[Any, ...]:
 def _cover_story(analysis: StoredAnalysis, styles: Mapping[str, ParagraphStyle]) -> tuple[Any, ...]:
     result = analysis.result
     summary = _mapping_value(result, "executive_summary")
-    comparison = _mapping_value(result, "comparison")
     confidence = _mapping_value(result, "confidence")
     notice = (
         "Fictional demonstration. Illustrative assumptions are not live vendor quotes, "
@@ -136,36 +135,61 @@ def _cover_story(analysis: StoredAnalysis, styles: Mapping[str, ParagraphStyle])
         Paragraph(escape(analysis.input.name), styles["title"]),
         Paragraph(escape(analysis.input.description), styles["lead"]),
         _notice(notice, styles),
-        Spacer(1, 18),
+        Spacer(1, 12),
         Paragraph("Executive summary", styles["h1"]),
-        _metric_table(summary, comparison, confidence, styles),
-        Spacer(1, 16),
-        Paragraph("Decision interpretation", styles["h2"]),
-        Paragraph(
-            escape(str(summary.get("recommendation", "Review the modeled case."))), styles["body"]
+        Paragraph("Decision posture", styles["h2"]),
+        _notice(
+            f"{str(summary.get('decision_posture', 'REVIEW REQUIRED')).replace('_', ' ')}: "
+            f"{summary.get('recommendation', 'Review the modeled case.')!s}",
+            styles,
         ),
         Spacer(1, 8),
+        _decision_quality_table(summary, confidence, styles),
+        Spacer(1, 12),
+        Paragraph("Modeled financial comparison", styles["h2"]),
+        _metric_table(summary, styles),
+        Spacer(1, 8),
         Paragraph(escape(str(summary.get("disclaimer", notice))), styles["small"]),
-        Spacer(1, 18),
-        _report_metadata(analysis, styles),
+    )
+
+
+def _decision_quality_table(
+    summary: Mapping[str, Any],
+    confidence: Mapping[str, Any],
+    styles: Mapping[str, ParagraphStyle],
+) -> Table:
+    gaps = ", ".join(_title(value) for value in summary.get("priority_evidence_gaps", ()))
+    sensitivities = ", ".join(
+        _title(value) for value in summary.get("strongest_sensitivities", ())
+    )
+    return _key_value_table(
+        (
+            (
+                "Evidence confidence",
+                f"{confidence.get('level', 'Unavailable')} ({confidence.get('score', '—')} / 100)",
+            ),
+            ("Required next action", str(summary.get("required_next_action", "Review inputs."))),
+            ("Priority evidence gaps", gaps or "No unsourced material assumptions identified"),
+            ("Strongest sensitivities", sensitivities or "No sensitivity results available"),
+        ),
+        styles,
     )
 
 
 def _metric_table(
     summary: Mapping[str, Any],
-    comparison: Mapping[str, Any],
-    confidence: Mapping[str, Any],
     styles: Mapping[str, ParagraphStyle],
 ) -> Table:
     rows = (
         ("Current 5-year TCO", _money(summary.get("current_tco_5_year"))),
         ("Proposed 5-year TCO", _money(summary.get("proposed_tco_5_year"))),
         ("Modeled 5-year savings", _money(summary.get("savings_5_year"))),
-        ("Modeled productivity value", _money(summary.get("productivity_value_5_year"))),
         ("Modeled net value", _money(summary.get("net_value_5_year"))),
-        ("Modeled ROI", _percent(summary.get("roi_5_year_pct"))),
+        (
+            "Modeled ROI (net value / proposed-state TCO)",
+            _percent(summary.get("roi_5_year_pct")),
+        ),
         ("Simple payback", _months(summary.get("payback_months"))),
-        ("Assumption confidence", str(confidence.get("level", "Unavailable"))),
     )
     cells = [
         [Paragraph(label, styles["metric_label"]), Paragraph(value, styles["metric_value"])]
@@ -211,7 +235,10 @@ def _comparison_story(
                 ("Three-year TCO savings", _money(comparison.get("savings_3_year"))),
                 ("Five-year TCO savings", _money(comparison.get("savings_5_year"))),
                 ("Five-year modeled net value", _money(comparison.get("net_value_5_year"))),
-                ("Five-year modeled ROI", _percent(comparison.get("roi_5_year_pct"))),
+                (
+                    "Modeled ROI (net value / proposed-state TCO)",
+                    _percent(comparison.get("roi_5_year_pct")),
+                ),
                 (
                     "Break-even within five years",
                     _yes_no(comparison.get("break_even_within_5_years")),
@@ -219,6 +246,9 @@ def _comparison_story(
             ),
             styles,
         ),
+        Spacer(1, 16),
+        Paragraph("Report provenance", styles["h2"]),
+        _report_metadata(analysis, styles),
     )
 
 
@@ -274,7 +304,7 @@ def _assumptions_story(
 def _sensitivity_story(
     analysis: StoredAnalysis, styles: Mapping[str, ParagraphStyle]
 ) -> tuple[Any, ...]:
-    rows = [["Dimension", "Case", "Assumption", "Proposed TCO", "Net value", "ROI"]]
+    rows = [["Dimension", "Case", "Assumption", "Proposed TCO", "Net value", "Modeled ROI"]]
     for case in analysis.result.get("sensitivities", []):
         rows.append(
             [

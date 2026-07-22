@@ -29,12 +29,14 @@ cost per productive accelerator hour = annual run rate / productive accelerator 
 TCO savings = current-state TCO - proposed-state TCO
 modeled productivity value = avoided downtime hours × productivity value per hour
 net value = TCO savings + modeled productivity value
-ROI = net value / proposed-state TCO
+Modeled ROI = net value / proposed-state TCO
 payback = one-time investment / positive monthly operating benefit
 ```
 
 An unavailable denominator produces an explicit unavailable result rather than a fabricated zero.
 Payback is unavailable when the proposed run rate does not create a positive operating benefit.
+The interface and reports label this measure as `Modeled ROI (net value / proposed-state TCO)` so
+reviewers can see the denominator. It is a scenario comparison, not a realized investment return.
 
 ## Sensitivity analysis
 

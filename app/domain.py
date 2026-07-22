@@ -152,6 +152,10 @@ class CalculationLineage:
 @dataclass(frozen=True, slots=True)
 class ExecutiveSummary:
     scenario_name: str
+    decision_posture: str
+    required_next_action: str
+    priority_evidence_gaps: tuple[str, ...]
+    strongest_sensitivities: tuple[str, ...]
     current_tco_3_year: Decimal
     proposed_tco_3_year: Decimal
     current_tco_5_year: Decimal
