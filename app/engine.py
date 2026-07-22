@@ -64,6 +64,20 @@ INFRASTRUCTURE_FIELDS = (
     "staff_annual_cost",
     "operating_hours_year",
 )
+EVIDENCE_PRIORITY = (
+    "proposed_infrastructure.accelerator_count",
+    "proposed_infrastructure.compute_hourly_cost",
+    "proposed_infrastructure.productive_utilization_pct",
+    "workload.peak_demand_units",
+    "workload.annual_growth_pct",
+    "current_infrastructure.compute_hourly_cost",
+    "current_infrastructure.accelerator_count",
+    "migration_cost",
+    "implementation_cost",
+    "proposed_infrastructure.staff_annual_cost",
+    "current_infrastructure.staff_annual_cost",
+    "contract_years",
+)
 
 
 def _round(value: Decimal, quantum: Decimal = MONEY) -> Decimal:
@@ -670,6 +684,10 @@ def _closing_lineage(
         ("rationale", confidence.rationale),
     )
     summary_fields = (
+        "decision_posture",
+        "required_next_action",
+        "priority_evidence_gaps",
+        "strongest_sensitivities",
         "current_tco_3_year",
         "proposed_tco_3_year",
         "current_tco_5_year",
@@ -731,15 +749,49 @@ def _executive_summary(
     proposed: StateTCO,
     comparison: ScenarioComparison,
     confidence: ConfidenceAssessment,
+    sensitivities: tuple[SensitivityCase, ...],
 ) -> ExecutiveSummary:
-    if comparison.net_value_5_year > ZERO:
-        recommendation = "Modeled financial advantage for the proposed infrastructure."
-    else:
+    posture_by_confidence = {
+        "Low": "VALIDATION_REQUIRED",
+        "Medium": "CONDITIONAL_REVIEW",
+        "High": "DECISION_REVIEW_READY",
+    }
+    next_action_by_confidence = {
+        "Low": (
+            "Resolve the priority evidence gaps and rerun the comparison before investment review."
+        ),
+        "Medium": (
+            "Confirm the named workload, pricing, and implementation assumptions before approval."
+        ),
+        "High": (
+            "Submit the evidence pack for technical, commercial, security, and finance review."
+        ),
+    }
+    if comparison.net_value_5_year <= ZERO:
         recommendation = (
             "Modeled results do not show a financial advantage for the proposed infrastructure."
         )
+    elif confidence.level == "Low":
+        recommendation = (
+            "Evidence is insufficient for investment approval. Validate the highest-impact "
+            "assumptions before using this comparison to select an option."
+        )
+    elif confidence.level == "Medium":
+        recommendation = (
+            "The model supports conditional review. Confirm the named workload, pricing, and "
+            "implementation assumptions before approval."
+        )
+    else:
+        recommendation = (
+            "Evidence coverage supports decision review, subject to technical, commercial, "
+            "security, and finance approval."
+        )
     return ExecutiveSummary(
         scenario.name,
+        posture_by_confidence[confidence.level],
+        next_action_by_confidence[confidence.level],
+        _priority_evidence_gaps(scenario),
+        _strongest_sensitivity_dimensions(sensitivities),
         current.tco_3_year,
         proposed.tco_3_year,
         current.tco_5_year,
@@ -755,6 +807,33 @@ def _executive_summary(
     )
 
 
+def _priority_evidence_gaps(scenario: ScenarioInput) -> tuple[str, ...]:
+    sources = dict(scenario.assumption_sources)
+    material = set(_material_assumptions(scenario))
+    ranked = tuple(path for path in EVIDENCE_PRIORITY if path in material)
+    remaining = tuple(sorted(material.difference(ranked)))
+    return tuple(
+        path for path in (*ranked, *remaining) if _find_source(path, sources) is None
+    )[:3]
+
+
+def _strongest_sensitivity_dimensions(
+    sensitivities: tuple[SensitivityCase, ...],
+) -> tuple[str, ...]:
+    values: dict[str, list[Decimal]] = {}
+    for case in sensitivities:
+        values.setdefault(case.dimension, []).append(case.net_value_5_year)
+    spreads = (
+        (dimension, max(results) - min(results))
+        for dimension, results in values.items()
+        if results
+    )
+    return tuple(
+        dimension
+        for dimension, _spread in sorted(spreads, key=lambda item: (-item[1], item[0]))[:3]
+    )
+
+
 def calculate_analysis(payload: Mapping[str, Any]) -> AnalysisResult:
     """Calculate an immutable, deterministic five-year financial analysis."""
     scenario = parse_scenario(payload)
@@ -764,7 +843,9 @@ def calculate_analysis(payload: Mapping[str, Any]) -> AnalysisResult:
     comparison = _comparison(scenario, current, proposed)
     sensitivities = _sensitivities(scenario, current)
     confidence = _confidence(scenario)
-    summary = _executive_summary(scenario, current, proposed, comparison, confidence)
+    summary = _executive_summary(
+        scenario, current, proposed, comparison, confidence, sensitivities
+    )
     lineage = _lineage(scenario, current, proposed, comparison, sensitivities, confidence, summary)
     return AnalysisResult(
         scenario.name,

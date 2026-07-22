@@ -451,7 +451,8 @@
   function draftModel(payload, current, proposed, upfront, payback, net) {
     return { payload, currentAnnual: current.recurring[0], proposedAnnual: proposed.recurring[0], upfront,
       currentTco: current.cumulative, proposedTco: proposed.cumulative, annualSavings: current.recurring[0] - proposed.recurring[0],
-      payback, net3: net[2], net5: net[4], currentUnits: { 3: unitEconomics(current, payload.workload, payload.current_infrastructure, 3), 5: unitEconomics(current, payload.workload, payload.current_infrastructure, 5) },
+      payback, net3: net[2], net5: net[4], roi5: proposed.cumulative[4] ? net[4] / proposed.cumulative[4] * 100 : null,
+      currentUnits: { 3: unitEconomics(current, payload.workload, payload.current_infrastructure, 3), 5: unitEconomics(current, payload.workload, payload.current_infrastructure, 5) },
       proposedUnits: { 3: unitEconomics(proposed, payload.workload, payload.proposed_infrastructure, 3), 5: unitEconomics(proposed, payload.workload, payload.proposed_infrastructure, 5) },
       confidence: draftConfidence(payload), authoritative: false };
   }
@@ -480,7 +481,7 @@
     return { payload: buildPayload(), currentAnnual: currentCosts[0].recurring_total, proposedAnnual: proposedCosts[0].recurring_total,
       upfront: proposedCosts[0].transition, currentTco: cumulativeTotals(currentCosts), proposedTco: cumulativeTotals(proposedCosts),
       annualSavings: currentCosts[0].recurring_total - proposedCosts[0].recurring_total, payback: result.comparison.payback_months,
-      net3: result.comparison.net_value_3_year, net5: result.comparison.net_value_5_year,
+      net3: result.comparison.net_value_3_year, net5: result.comparison.net_value_5_year, roi5: result.comparison.roi_5_year_pct,
       currentUnits: { 3: result.current.unit_economics_3_year, 5: result.current.unit_economics_5_year },
       proposedUnits: { 3: result.proposed.unit_economics_3_year, 5: result.proposed.unit_economics_5_year },
       sensitivities: result.sensitivities, confidence: result.confidence, lineage: result.lineage, summary: result.executive_summary, authoritative: true };
@@ -675,20 +676,24 @@
   }
 
   function renderSummary(model) {
-    const impact = model.summary?.net_value_5_year ?? model.net5;
-    const direction = impact >= 0 ? "lower" : "higher";
-    setText("#summary-headline", model.summary?.recommendation || `The proposed state models ${money(Math.abs(impact))} ${direction} five-year net impact than the current estate.`);
+    const impact = model.summary?.net_value_5_year ?? model.net5, confidenceLevel = model.confidence?.level || "Low";
+    const posture = model.summary?.decision_posture || (confidenceLevel === "High" ? "DECISION_REVIEW_READY" : confidenceLevel === "Medium" ? "CONDITIONAL_REVIEW" : "VALIDATION_REQUIRED");
+    const nextAction = model.summary?.required_next_action || (confidenceLevel === "High" ? "Submit the evidence pack for specialist review." : "Save the analysis, resolve evidence gaps, and rerun the comparison.");
+    const fallbackRecommendation = impact <= 0 ? "Modeled results do not show a financial advantage for the proposed infrastructure." : confidenceLevel === "Low" ? "Evidence is insufficient for investment approval. Validate the highest-impact assumptions before using this comparison to select an option." : "Review the modeled case with accountable technical and commercial owners.";
+    setText("#summary-headline", model.summary?.recommendation || fallbackRecommendation);
     const points = $("#summary-points"); points.replaceChildren();
+    const gaps = (model.summary?.priority_evidence_gaps || []).map(humanize).join(", ") || "Save the analysis to rank unsourced material assumptions", sensitivities = (model.summary?.strongest_sensitivities || []).map(humanize).join(", ") || "Save the analysis to rank sensitivity spread";
     [
-      `Five-year modeled net impact: ${money(impact)}; five-year TCO delta: ${money(model.currentTco[4] - model.proposedTco[4])}.`,
+      `Decision posture: ${humanize(posture)}.`, `Required next action: ${nextAction}`,
+      `Priority evidence gaps: ${gaps}.`, `Strongest sensitivities: ${sensitivities}.`,
+      `Five-year modeled net impact: ${money(impact)}; modeled ROI (net value / proposed-state TCO): ${model.roi5 == null ? "unavailable" : percent(model.roi5)}.`,
       model.payback ? `Simple payback hypothesis: ${model.payback.toFixed(1)} months.` : "No simple payback appears within the modeled case.",
       model.confidence ? `${model.confidence.sourced_assumptions} of ${model.confidence.material_assumptions} material assumptions are sourced (${model.confidence.level} confidence).` : `${state.assumptions.length} source references are currently recorded.`,
     ].forEach((copy) => points.append(el("li", "", copy)));
-    const weakEvidence = model.confidence ? model.confidence.level !== "High" : state.assumptions.some((item) => item.confidence === "low" || !item.source.trim());
-    setText("#decision-gate-label", weakEvidence ? "Validate critical assumptions" : "Prepare controlled validation");
-    setText("#decision-gate-detail", weakEvidence ? "Resolve low-confidence or unsourced inputs before commercial commitment." : "Test the operating model with a time-boxed pilot and explicit success criteria.");
+    setText("#decision-gate-label", humanize(posture)); setText("#decision-gate-detail", nextAction);
   }
 
+  function humanize(value) { return String(value || "Unavailable").replaceAll("_", " ").replaceAll(".", " › ").toLowerCase().replace(/^\w/, (letter) => letter.toUpperCase()); }
   function updateConfidence() {
     if (state.authoritativeResult && !state.dirty && !state.previewingSensitivity) {
       setText("#confidence-score", `${Math.round(state.authoritativeResult.confidence.score)} / 100`);
@@ -696,7 +701,6 @@
     }
     setText("#confidence-score", `${Math.round(draftConfidence(buildPayload()).score)} / 100`);
   }
-
   function updateSensitivity(event) {
     const key = event.target.id.replace("sensitivity-", "");
     const sensitivity = { ...state.sensitivity, [key]: Number(event.target.value) };
@@ -704,7 +708,6 @@
     setText(`#${event.target.id}-output`, `${event.target.value}%`);
     renderAnalysis();
   }
-
   function resetSensitivity() {
     const utilization = Number(formValue("proposed.productive_utilization_pct"));
     const growth = Number(formValue("workload.annual_growth_pct"));
@@ -712,7 +715,6 @@
     ["growth", "utilization", "price"].forEach((key) => { const input = $(`#sensitivity-${key}`); input.value = state.sensitivity[key]; setText(`#sensitivity-${key}-output`, `${state.sensitivity[key]}%`); });
     renderAnalysis();
   }
-
   function syncSensitivityControls() {
     ["growth", "utilization", "price"].forEach((key) => {
       const input = $(`#sensitivity-${key}`);
@@ -721,14 +723,12 @@
       setText(`#sensitivity-${key}-output`, `${state.sensitivity[key]}%`);
     });
   }
-
   function toggleExport(event) {
     event.stopPropagation();
     const menu = $("#export-menu"); menu.hidden = !menu.hidden;
     $("#export-button").setAttribute("aria-expanded", String(!menu.hidden));
     if (!menu.hidden) $("[role='menuitem']", menu)?.focus();
   }
-
   function exportScenario(event) {
     event.preventDefault();
     const format = event.currentTarget.dataset.export;
