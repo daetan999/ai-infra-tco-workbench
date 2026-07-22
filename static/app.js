@@ -571,7 +571,8 @@
     const proposed = model.proposedUnits[horizon];
     const rows = [
       [`${horizon}-year recurring cost`, current.recurring_cost, proposed.recurring_cost],
-      ["Cost / training run", current.cost_per_training_run, proposed.cost_per_training_run],
+      ...(current.cost_per_training_run !== null || proposed.cost_per_training_run !== null
+        ? [["Cost / training run", current.cost_per_training_run, proposed.cost_per_training_run]] : []),
       ["Cost / 1M requests", current.cost_per_million_requests, proposed.cost_per_million_requests],
       ["Cost / productive accelerator-hour", current.cost_per_productive_accelerator_hour, proposed.cost_per_productive_accelerator_hour],
     ];

@@ -22,7 +22,7 @@ The saved comparison view uses the authoritative engine result and exposes TCO, 
 
 ![Saved decision comparison](docs/assets/tco-comparison.png)
 
-Download the generated [fictional CPU-to-GPU business-case PDF](docs/examples/fictional-cpu-to-gpu-business-case.pdf) to see the executive reporting output.
+Download the generated [fictional Northstar private-RAG business-case PDF](docs/examples/fictional-northstar-private-rag-business-case.pdf) to see the executive reporting output.
 
 ## What it demonstrates
 
@@ -54,7 +54,7 @@ See [architecture](docs/architecture.md), [financial methodology](docs/methodolo
 
 When `SEED_DEMO_DATA=true`, an empty database receives exactly three demonstrations:
 
-1. **CPU-to-GPU inference modernization** — owned CPU inference estate versus an owned GPU inference estate.
+1. **Fictional Northstar Private RAG TCO** — the shared portfolio case, comparing an owned CPU inference estate with an owned GPU inference estate.
 2. **Cloud GPU vs owned infrastructure** — a cloud GPU reservation versus an owned GPU cluster.
 3. **Shared serving utilization** — dedicated model pools versus a shared serving platform.
 

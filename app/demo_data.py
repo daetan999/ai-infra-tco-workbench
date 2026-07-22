@@ -17,6 +17,7 @@ def _infrastructure(
     accelerators: int,
     hourly_cost: float,
     utilization: float = 48.0,
+    storage_tb: float = 180.0,
 ) -> dict:
     return {
         "label": label,
@@ -24,7 +25,7 @@ def _infrastructure(
         "accelerator_count": accelerators,
         "compute_hourly_cost": hourly_cost,
         "productive_utilization_pct": utilization,
-        "storage_tb": 180.0,
+        "storage_tb": storage_tb,
         "storage_per_tb_month": 20.0,
         "network_egress_tb_month": 24.0,
         "network_per_gb": 0.05,
@@ -37,7 +38,19 @@ def _infrastructure(
     }
 
 
-def _scenario(name: str, comparison: str, current: dict, proposed: dict) -> ScenarioInput:
+def _scenario(
+    name: str,
+    comparison: str,
+    current: dict,
+    proposed: dict,
+    annual_growth_pct: float = 30.0,
+    source_overrides: dict[str, str] | None = None,
+) -> ScenarioInput:
+    assumption_sources = {
+        "current_infrastructure.compute_hourly_cost": "Fictional benchmark",
+        "proposed_infrastructure.compute_hourly_cost": "Illustrative list pricing",
+        **(source_overrides or {}),
+    }
     return ScenarioInput.model_validate(
         {
             "name": name,
@@ -49,11 +62,11 @@ def _scenario(name: str, comparison: str, current: dict, proposed: dict) -> Scen
             "workload": {
                 "workload_type": "inference",
                 "model_size_billion": 70.0,
-                "training_runs_per_month": 2,
+                "training_runs_per_month": 0,
                 "monthly_requests_million": 60.0,
                 "average_demand_units": 32.0,
                 "peak_demand_units": 85.0,
-                "annual_growth_pct": 30.0,
+                "annual_growth_pct": annual_growth_pct,
                 "productivity_value_per_hour": 125.0,
                 "downtime_hours_monthly": 6.0,
             },
@@ -62,10 +75,7 @@ def _scenario(name: str, comparison: str, current: dict, proposed: dict) -> Scen
             "migration_cost": 120000.0,
             "implementation_cost": 65000.0,
             "contract_years": 3,
-            "assumption_sources": {
-                "current_infrastructure.compute_hourly_cost": "Fictional benchmark",
-                "proposed_infrastructure.compute_hourly_cost": "Illustrative list pricing",
-            },
+            "assumption_sources": assumption_sources,
         }
     )
 
@@ -74,10 +84,27 @@ def demo_scenarios() -> tuple[ScenarioInput, ScenarioInput, ScenarioInput]:
     """Return exactly three clearly fictional comparison scenarios."""
     return (
         _scenario(
-            "CPU-to-GPU inference modernization",
+            "Fictional Northstar Private RAG TCO",
             "current_vs_proposed",
-            _infrastructure("CPU inference estate", "owned", 96, 2.4),
-            _infrastructure("GPU inference estate", "owned", 12, 4.8),
+            _infrastructure(
+                "CPU inference estate", "owned", 96, 2.4, storage_tb=36.0
+            ),
+            _infrastructure(
+                "GPU inference estate", "owned", 12, 4.8, storage_tb=36.0
+            ),
+            annual_growth_pct=35.0,
+            source_overrides={
+                "workload.monthly_requests_million": (
+                    "Fictional Northstar peak-demand normalization"
+                ),
+                "workload.annual_growth_pct": "Fictional Northstar portfolio case contract",
+                "current_infrastructure.storage_tb": (
+                    "Northstar storage plan: 18 TB governed data plus working capacity"
+                ),
+                "proposed_infrastructure.storage_tb": (
+                    "Northstar storage plan: 18 TB governed data plus working capacity"
+                ),
+            },
         ),
         _scenario(
             "Cloud GPU vs owned infrastructure",

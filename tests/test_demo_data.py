@@ -10,7 +10,7 @@ def test_demo_catalog_contains_exactly_three_named_fictional_scenarios() -> None
     assert len(demos) == 3
     assert all(demo.fictional for demo in demos)
     assert [demo.name for demo in demos] == [
-        "CPU-to-GPU inference modernization",
+        "Fictional Northstar Private RAG TCO",
         "Cloud GPU vs owned infrastructure",
         "Shared serving utilization",
     ]
@@ -18,6 +18,20 @@ def test_demo_catalog_contains_exactly_three_named_fictional_scenarios() -> None
     shared = demos[2]
     assert shared.current_infrastructure.productive_utilization_pct == 35.0
     assert shared.proposed_infrastructure.productive_utilization_pct == 72.0
+
+    northstar = demos[0]
+    assert northstar.workload.model_size_billion == 70.0
+    assert northstar.workload.training_runs_per_month == 0
+    assert northstar.workload.monthly_requests_million == 60.0
+    assert northstar.workload.annual_growth_pct == 35.0
+    assert northstar.current_infrastructure.storage_tb == 36.0
+    assert northstar.proposed_infrastructure.storage_tb == 36.0
+    assert northstar.assumption_sources[
+        "workload.monthly_requests_million"
+    ] == "Fictional Northstar peak-demand normalization"
+    assert northstar.assumption_sources[
+        "current_infrastructure.storage_tb"
+    ] == "Northstar storage plan: 18 TB governed data plus working capacity"
 
 
 def test_demo_seed_is_idempotent(tmp_path, evaluator) -> None:

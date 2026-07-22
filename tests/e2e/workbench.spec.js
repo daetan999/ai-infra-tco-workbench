@@ -4,12 +4,13 @@ test("loads a fictional scenario and renders authoritative engine results", asyn
   await page.goto("/");
 
   await expect(page.locator(".scenario-item")).toHaveCount(3);
-  await page.getByRole("button", { name: /CPU-to-GPU inference modernization/i }).click();
-  await expect(page.getByRole("heading", { name: "CPU-to-GPU inference modernization" })).toBeVisible();
+  await page.getByRole("button", { name: /Fictional Northstar Private RAG TCO/i }).click();
+  await expect(page.getByRole("heading", { name: "Fictional Northstar Private RAG TCO" })).toBeVisible();
   await expect(page.locator("#analysis-source-label")).toHaveText("Saved engine result");
   await expect(page.locator("#net-impact")).not.toHaveText("—");
-  await expect(page.locator("#confidence-score")).toHaveText("15 / 100");
+  await expect(page.locator("#confidence-score")).toHaveText("21 / 100");
   await expect(page.locator("#lineage-grid .lineage-card").first()).toBeVisible();
+  await expect(page.locator("#unit-economics-table")).not.toContainText("Cost / training run");
 
   await page.locator("#export-button").click();
   const download = page.waitForEvent("download");

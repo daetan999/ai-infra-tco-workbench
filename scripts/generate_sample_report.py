@@ -9,7 +9,7 @@ from app.exports import export_pdf
 from app.repository import AnalysisRepository
 
 ROOT = Path(__file__).parents[1]
-OUTPUT = ROOT / "docs" / "examples" / "fictional-cpu-to-gpu-business-case.pdf"
+OUTPUT = ROOT / "docs" / "examples" / "fictional-northstar-private-rag-business-case.pdf"
 
 
 def generate() -> Path:
