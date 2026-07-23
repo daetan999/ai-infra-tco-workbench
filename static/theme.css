@@ -1,0 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&display=swap");
+
+/* Financial broadsheet: a decision record with the gravity of a printed ledger. */
+:root {
+  color-scheme: light;
+  --ink: #25362e;
+  --muted: #627269;
+  --faint: #78827a;
+  --night: #f3eee3;
+  --slate-950: #f3eee3;
+  --slate-900: #ebe3d4;
+  --slate-850: #e4dac9;
+  --slate-800: #d9cdb9;
+  --slate-700: #bfb29d;
+  --line: rgb(87 79 60 / 24%);
+  --line-strong: rgb(72 64 47 / 40%);
+  --mint: #356c54;
+  --mint-deep: #dbe5d7;
+  --amber: #9d402d;
+  --red: #a63e42;
+  --blue: #3d6979;
+  --shadow: 0 10px 30px rgb(71 56 35 / 10%);
+  --radius: 2px;
+  --mono: "DM Mono", ui-monospace, monospace;
+  --sans: "Newsreader", Georgia, serif;
+}
+
+body,
+button,
+input,
+select,
+summary {
+  font-family: var(--sans);
+}
+
+body { background: #f3eee3; }
+h1,
+h2,
+h3,
+.brand strong,
+.section-heading h2 {
+  font-family: "Newsreader", Georgia, serif;
+  font-weight: 600;
+}
+
+.eyebrow,
+.kicker,
+.brand small,
+.status-pill,
+label,
+.scenario-item-copy small,
+.updated-label,
+.button,
+.sync-state,
+.section-nav a,
+.input-prefix b,
+.input-suffix b {
+  font-family: "DM Mono", ui-monospace, monospace;
+}
+
+.topbar,
+.section-nav { background: rgb(243 238 227 / 93%); }
+.scenario-rail { background: #e7dece; }
+.brand-mark {
+  border-radius: 50%;
+  border-color: #b08d68;
+  background: #f8f1e5;
+  color: var(--amber);
+  box-shadow: none;
+}
+
+.button-primary { box-shadow: none; color: #fffaf0; }
+.button-primary:hover { background: #2c5946; }
+.button-quiet { background: #f8f2e7; color: var(--ink); }
+.button-quiet:hover { background: #e1d4c0; }
+.icon-button { background: #e2d7c5; color: var(--mint); }
+
+.search-field,
+input,
+select,
+.input-prefix,
+.input-suffix,
+.workload-panel,
+.advanced-inputs,
+.scenario-item[aria-current="page"],
+.export-menu {
+  background: #fffaf1;
+  color: var(--ink);
+}
+
+.scenario-item { color: var(--ink); }
+.scenario-item:hover { background: #f5ecdd; }
+.scenario-item[aria-current="page"] { border-color: #85a08d; }
+.scenario-item[aria-current="page"] .scenario-mark { background: #d7e5d6; color: var(--mint); }
+.scenario-mark { background: #dfd3bf; color: var(--amber); }
+
+.section-nav a:hover,
+.section-nav a:focus { background: #dfd3bf; color: var(--ink); }
+.notice { color: #435951; background: #e8f0e3; }
+.notice strong { color: var(--ink); }
+.rail-note { border-color: var(--line); }
+
+.payback-ring {
+  background: radial-gradient(circle at center, #fffaf1 0 57%, transparent 58%), conic-gradient(var(--mint) var(--payback-angle), var(--slate-700) 0);
+}
+
+.modal,
+.dialog,
+.tooltip { box-shadow: var(--shadow); }

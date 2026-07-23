@@ -12,6 +12,14 @@ This project represents the **value engineering and business-case layer** of my 
 
 > **Demonstration boundary:** every bundled organization, workload, price, and result is fictional or illustrative. Outputs are decision-support hypotheses—not financial advice, live vendor quotes, or guaranteed ROI.
 
+## Visual system
+
+The TCO workbench is styled as a **financial broadsheet**: parchment surfaces, forest-green decision
+signals, and oxblood attention states replace the familiar dark AI dashboard. Newsreader gives
+decision sections editorial authority, while DM Mono keeps figures, provenance, and formulas precise.
+The restrained square geometry makes the workspace read as an auditable ledger rather than a generic
+analytics product.
+
 ## Product walkthrough
 
 The workspace keeps scenario inputs, operating assumptions, modeled economics, sensitivity ranges, calculation lineage, and the executive summary in one reviewable flow.

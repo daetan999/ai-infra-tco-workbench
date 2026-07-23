@@ -5,6 +5,24 @@
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d14"/><stop offset="1" stop-color="#111a24"/></linearGradient>
     <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18232e"/><stop offset="1" stop-color="#0f161f"/></linearGradient>
     <filter id="shadow"><feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000" flood-opacity=".3"/></filter>
+    <style>
+      /* Financial-broadsheet palette used by the live workbench. */
+      text { font-family: Newsreader, Georgia, serif !important; }
+      text[letter-spacing], .mono { font-family: "DM Mono", "Courier New", monospace !important; }
+      stop[stop-color="#080d14"] { stop-color: #f3eee3 !important; }
+      stop[stop-color="#111a24"] { stop-color: #e7dece !important; }
+      stop[stop-color="#18232e"] { stop-color: #fffaf1 !important; }
+      stop[stop-color="#0f161f"] { stop-color: #f1e8d9 !important; }
+      [fill="#f4f6f8"] { fill: #25362e !important; }
+      [fill="#a9b6c5"], [fill="#8393a5"], [fill="#8292a5"], [fill="#708094"] { fill: #627269 !important; }
+      [fill="#e8ae52"] { fill: #9d402d !important; }
+      [fill="#52d6c1"] { fill: #356c54 !important; }
+      [fill="#101820"] { fill: #fffaf1 !important; }
+      [fill="#151b20"] { fill: #f6ecdf !important; }
+      [fill="#435364"], [fill="#354656"], [fill="#2c3b49"] { fill: #bfb29d !important; }
+      [stroke="#2c3b49"], [stroke="#354656"] { stroke: #bfb29d !important; }
+      [stroke="#435364"] { stroke: #cbbda7 !important; }
+    </style>
   </defs>
   <rect width="1600" height="680" rx="32" fill="url(#bg)"/>
   <circle cx="1420" cy="80" r="290" fill="#e8ae52" opacity=".07"/><circle cx="70" cy="650" r="250" fill="#52d6c1" opacity=".05"/>
