@@ -29,12 +29,12 @@ from .schemas import StoredAnalysis
 
 FORMULA_PREFIXES = ("=", "+", "-", "@")
 CONTROL_CHARACTERS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-NAVY = colors.HexColor("#10202F")
-INK = colors.HexColor("#233544")
-SLATE = colors.HexColor("#5E7080")
-MIST = colors.HexColor("#EAF0F3")
-TEAL = colors.HexColor("#178C80")
-AMBER = colors.HexColor("#B7791F")
+NAVY = colors.HexColor("#25362E")
+INK = colors.HexColor("#25362E")
+SLATE = colors.HexColor("#6D6659")
+MIST = colors.HexColor("#F4EEE2")
+TEAL = colors.HexColor("#2F6B52")
+AMBER = colors.HexColor("#8F2F2A")
 SOURCE_METADATA = " | workbench-meta:"
 
 

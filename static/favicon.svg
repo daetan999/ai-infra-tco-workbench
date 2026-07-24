@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#101a24"/>
-  <path d="M16 45V19h7l18 18V19h7v26h-7L23 27v18z" fill="#f5c979"/>
-  <circle cx="47" cy="17" r="5" fill="#62d9bc"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">TCO Workbench</title>
+  <rect width="64" height="64" rx="32" fill="#f4eee2"/>
+  <circle cx="32" cy="32" r="25" fill="none" stroke="#8f2f2a" stroke-width="3"/>
+  <path d="M20 22h24M20 32h24M20 42h15" stroke="#2f6b52" stroke-width="4" stroke-linecap="square"/>
 </svg>

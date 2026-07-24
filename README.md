@@ -1,82 +1,90 @@
-# Enterprise AI Infrastructure TCO & ROI Workbench
+# AI Infrastructure TCO Workbench
 
-[![CI](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-69dfbe.svg)](LICENSE)
+A local decision workspace for comparing AI infrastructure operating models with explicit assumptions, deterministic financial calculations, sensitivity analysis, and review-ready exports.
 
-![TCO workbench overview](docs/assets/tco-workbench-hero.svg)
+![Northstar TCO Workbench showing a fictional private RAG scenario and its shared workload assumptions](docs/assets/tco-dashboard.png)
 
-A local-first decision workspace for comparing AI infrastructure operating models with transparent assumptions, deterministic financial calculations, sensitivity analysis, and executive-ready exports.
+*The seeded Northstar scenario compares a fictional CPU inference estate with a proposed GPU estate. All organizations, values, and results shown here are illustrative.*
 
-This project represents the **value engineering and business-case layer** of my enterprise AI infrastructure portfolio. It translates architecture choices into auditable three- and five-year economics without using a language model, external pricing feed, or opaque scoring service to calculate financial results.
+## The decision it supports
 
-> **Demonstration boundary:** every bundled organization, workload, price, and result is fictional or illustrative. Outputs are decision-support hypotheses—not financial advice, live vendor quotes, or guaranteed ROI.
+Infrastructure choices rarely reduce to a purchase price. Utilization, demand growth, storage, network, power, staffing, transition cost, and evidence quality all change the case.
+
+The workbench keeps those inputs and their provenance beside the resulting economics. It is designed to help a technical and financial review answer:
+
+- Are the current and proposed states normalized to the same workload and time horizon?
+- Which assumptions drive the difference in total cost?
+- Does the case survive plausible changes in utilization, price, growth, and energy cost?
+- Can a reviewer trace each headline result back to a formula and saved input?
+
+> **Demonstration boundary:** this is a single-user portfolio application. It does not use live pricing feeds, customer data, or an AI model to calculate results. Its output is decision support—not a quote, financial advice, or a guaranteed return.
+
+## From assumptions to a reviewable case
+
+### 1. Build comparable operating states
+
+The model builder applies one workload envelope to a reference state and a candidate state. Each scenario records demand, infrastructure, operating, transition, and contract assumptions, plus source notes and confidence labels.
+
+### 2. Read the modeled economics
+
+The saved comparison exposes five-year net impact, payback, normalized unit cost, evidence confidence, cumulative TCO, and the recurring-cost variance. The oxblood and forest-green series make the two operating states legible without turning the analysis into a generic dashboard.
+
+![Saved engine result comparing cumulative TCO, payback, and unit economics](docs/assets/tco-comparison.png)
+
+### 3. Stress and audit the thesis
+
+One-variable sensitivity ranges show which assumptions can move the five-year case. Calculation lineage then connects a source cost to proposed TCO, ROI, and the executive-summary value.
+
+![Sensitivity ranges, formula lineage, and the start of the executive summary](docs/assets/tco-sensitivity-lineage.png)
+
+## Product capabilities
+
+- Compare current versus proposed, build versus buy, cloud versus owned, utilization improvement, or vendor scenarios.
+- Calculate annual cost components, three- and five-year TCO, unit economics, savings, modeled productivity value, net value, ROI, payback, and break-even status.
+- Stress utilization, compute price, demand growth, and energy price with one-factor sensitivity ranges.
+- Track assumption sources, confidence labels, evidence coverage, and formula-level lineage.
+- Append immutable SQLite analysis versions instead of silently recalculating reviewed history.
+- Export a saved analysis as JSON, CSV, or a formatted PDF memo.
 
 ## Visual system
 
-The TCO workbench is styled as a **financial broadsheet**: parchment surfaces, forest-green decision
-signals, and oxblood attention states replace the familiar dark AI dashboard. Newsreader gives
-decision sections editorial authority, while DM Mono keeps figures, provenance, and formulas precise.
-The restrained square geometry makes the workspace read as an auditable ledger rather than a generic
-analytics product.
+The interface takes its cues from a financial broadsheet rather than the dark, glowing conventions common to AI tooling.
 
-## Product walkthrough
+| Element | Treatment |
+| --- | --- |
+| Palette | Parchment workspace, forest-green decisions, oxblood comparison states |
+| Typography | Newsreader for editorial hierarchy; DM Mono for figures, labels, and formulas |
+| Geometry | Square rules, restrained borders, ledger-like tables, minimal shadow |
+| Information posture | Sources, confidence, and lineage remain visible beside the financial case |
 
-The workspace keeps scenario inputs, operating assumptions, modeled economics, sensitivity ranges, calculation lineage, and the executive summary in one reviewable flow.
+## How it works
 
-![Scenario modeling workspace](docs/assets/tco-dashboard.png)
+![Workflow from a shared workload and explicit assumptions to comparison, sensitivity, lineage, and exports](docs/assets/tco-workflow.svg)
 
-The saved comparison view uses the authoritative engine result and exposes TCO, payback, normalized unit economics, confidence, and the modeled direction of value.
-
-![Saved decision comparison](docs/assets/tco-comparison.png)
-
-Download the generated [fictional Northstar private-RAG business-case PDF](docs/examples/fictional-northstar-private-rag-business-case.pdf) to see the executive reporting output.
-
-## What it demonstrates
-
-- **Comparable operating models:** current versus proposed, cloud versus owned infrastructure, and utilization improvement.
-- **Explicit inputs:** workload demand, growth, accelerator count, utilization, compute price, storage, network, power, PUE, staffing, transition cost, and contract horizon.
-- **Decision outputs:** annual cost components, 3-year and 5-year TCO, unit economics, savings, modeled productivity value, net value, ROI, payback, and break-even status.
-- **Sensitivity:** one-factor ranges for utilization, compute price, demand growth, and energy price.
-- **Evidence posture:** editable source references, confidence labels, coverage scoring, and formula-level lineage.
-- **Immutable history:** each update creates a new SQLite analysis version; historical runs are returned as stored rather than silently recalculated.
-- **Executive exports:** JSON for system handoff, CSV for further analysis, and a formatted PDF board memo.
-
-## How the decision flow works
-
-![TCO decision workflow](docs/assets/tco-workflow.svg)
-
-1. Define a shared workload and the two infrastructure states.
-2. Record pricing, operating, growth, and transition assumptions with provenance.
+1. Define the workload shared by both infrastructure states.
+2. Record operating, pricing, growth, and transition assumptions with provenance.
 3. Save the scenario to run the deterministic `Decimal` engine.
-4. Review comparable costs, unit economics, sensitivity, confidence, and lineage.
-5. Export the immutable saved analysis for technical, finance, or executive review.
+4. Review cost, unit economics, sensitivity, confidence, and formula lineage.
+5. Export the stored analysis snapshot for further review.
+
+![Architecture showing the browser workspace, FastAPI boundary, calculation engine, SQLite persistence, and export paths](docs/assets/calculation-engine.svg)
 
 The implementation is a focused FastAPI modular monolith:
 
-![Calculation engine architecture](docs/assets/calculation-engine.svg)
+| Layer | Responsibility |
+| --- | --- |
+| `app/schemas.py` | Strict Pydantic input and stored-analysis contracts |
+| `app/engine.py` | Deterministic TCO, ROI, sensitivity, and lineage calculations |
+| `app/repository.py` | SQLite persistence and immutable scenario versions |
+| `app/routes.py` | Scenario CRUD, history, and export endpoints |
+| `app/exports.py` | JSON, CSV, and PDF rendering from saved snapshots |
+| `static/` and `templates/` | Responsive browser workspace |
 
-See [architecture](docs/architecture.md), [financial methodology](docs/methodology.md), and [modeling guardrails](docs/guardrails.md) for the design invariants and operating boundary.
-
-## Design Decisions
-
-- **Calculate with Decimal code, not generated narrative.** Reviewers can reproduce formulas and rounding. The model cannot invent missing context; approved assumptions or a revised scenario must supply it.
-- **Preserve immutable analysis versions.** A reviewed result never changes when inputs or policy evolve. Version history uses more storage and requires explicit revision; an approved retention policy can archive old runs without rewriting them.
-- **Gate recommendations by evidence confidence.** Low-confidence inputs can produce arithmetic but cannot support investment approval. This may delay an attractive case; sourced workload, pricing, implementation, and contract evidence can move it to conditional or decision review.
-
-## Bundled fictional scenarios
-
-When `SEED_DEMO_DATA=true`, an empty database receives exactly three demonstrations:
-
-1. **Fictional Northstar Private RAG TCO** — the shared portfolio case, comparing an owned CPU inference estate with an owned GPU inference estate.
-2. **Cloud GPU vs owned infrastructure** — a cloud GPU reservation versus an owned GPU cluster.
-3. **Shared serving utilization** — dedicated model pools versus a shared serving platform.
-
-Seeding is idempotent and never adds demonstrations to a database that already contains scenarios.
+Read the detailed [architecture](docs/architecture.md), [financial methodology](docs/methodology.md), and [modeling guardrails](docs/guardrails.md).
 
 ## Run locally
 
-### Python
+Requires Python 3.12 or newer.
 
 ```bash
 python3.12 -m venv .venv
@@ -86,46 +94,41 @@ python -m pip install -e '.[dev]'
 SEED_DEMO_DATA=true uvicorn app.main:app --reload
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). By default, data is stored in `data/tco-workbench.db`; set `TCO_WORKBENCH_DB` to choose another SQLite path.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The seeded database receives three fictional scenarios only when it is empty. By default, data is stored at `data/tco-workbench.db`; set `TCO_WORKBENCH_DB` to use another path.
 
-### Container
+For a containerized run:
 
 ```bash
 docker compose up --build
 ```
 
-The container runs as a non-root user with a read-only filesystem, a dedicated data volume, a temporary `/tmp`, and `no-new-privileges`.
+The Compose service uses a dedicated data volume, a read-only filesystem, a temporary `/tmp`, a non-root image user, and `no-new-privileges`.
 
-## API
+## API surface
 
-Scenario endpoints return a consistent `{ "success", "data", "error" }` envelope. Inputs are validated with strict Pydantic schemas.
+Scenario responses use a consistent `{ "success", "data", "error" }` envelope. Interactive OpenAPI documentation is available at `/docs` while the application is running.
 
 | Method | Route | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Service health |
-| `GET` | `/api/scenarios` | List the latest version of each scenario |
-| `POST` | `/api/scenarios` | Evaluate and create a scenario |
-| `GET` | `/api/scenarios/{scenario_id}` | Read the latest saved analysis |
-| `PUT` | `/api/scenarios/{scenario_id}` | Evaluate and append an immutable version |
-| `DELETE` | `/api/scenarios/{scenario_id}` | Archive a scenario while retaining immutable versions |
+| `GET` / `POST` | `/api/scenarios` | List latest scenarios or create one |
+| `GET` / `PUT` / `DELETE` | `/api/scenarios/{scenario_id}` | Read, version, or archive a scenario |
 | `GET` | `/api/scenarios/{scenario_id}/versions` | List immutable analysis history |
 | `GET` | `/api/scenarios/{scenario_id}/versions/{version}` | Read one historical version |
 | `GET` | `/api/scenarios/{scenario_id}/exports/{format}` | Export `json`, `csv`, or `pdf` |
 
-Interactive OpenAPI documentation is available at `/docs` while the service is running.
-
 ## Verification
 
 ```bash
-# Unit and integration tests with branch coverage (80% minimum)
+# Python unit, integration, route, repository, export, and contract tests
 pytest
 
-# Python lint and browser script syntax
+# Python and browser-script checks
 ruff check app tests scripts
 npm ci
 npm run check
 
-# Chromium decision journeys
+# Chromium decision journeys, including the narrow layout
 npx playwright install chromium
 npm run test:e2e
 
@@ -134,36 +137,17 @@ npm audit
 pip-audit
 ```
 
-CI repeats Python linting, tests and coverage, JavaScript checks, all browser flows, and a production container build.
+Pytest enforces at least 80% branch coverage. CI runs the Python checks, Playwright journeys, and a production container build; see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-## Repository map
+## Scope and limitations
 
-```text
-app/
-  domain.py       Financial domain types and validation
-  engine.py       Deterministic TCO, ROI, sensitivity, and lineage engine
-  repository.py   SQLite scenario and immutable-version persistence
-  routes.py       Validated CRUD, history, and export API
-  exports.py      JSON, CSV, and executive PDF generation
-static/           Accessible responsive decision workspace
-templates/        FastAPI-rendered application shell
-tests/            Unit, integration, contract, and Playwright tests
-docs/             Architecture, methodology, guardrails, and portfolio evidence
-```
-
-## Trust and deployment boundary
-
-- Financial calculations use deterministic code and explicit rounding; narrative text cannot change results.
-- Exports read the saved analysis snapshot, preserving what reviewers actually approved.
-- Archived scenarios leave the active workspace but remain in the local SQLite history until the database file is removed under an approved retention process.
-- Errors are sanitized at the HTTP boundary, inputs are schema-validated, and exported responses disable content sniffing and caching.
-- The included application is a **single-user local demonstrator**. Shared or production deployment requires authentication, authorization, tenant isolation, TLS, rate limits, retention controls, and an approved data-classification process.
-- Do not enter customer identifiers, confidential configurations, credentials, production telemetry, proprietary prices, supplier quotes, or contract terms into a public demonstration.
+- The calculation engine is deterministic, but the result is only as credible as the supplied inputs and sources.
+- Sensitivity analysis varies one factor at a time; it is not a probabilistic simulation.
+- Payback is simple and undiscounted. Review [the methodology](docs/methodology.md) before interpreting modeled value.
+- Archived scenarios remain in local SQLite history until the database is removed under an appropriate retention process.
+- Shared or production deployment would require authentication, authorization, tenant isolation, TLS, rate limiting, retention controls, and an approved data-classification process.
+- Do not enter customer identifiers, credentials, production telemetry, proprietary prices, supplier quotes, or contract terms into a public demonstration.
 
 ## License
 
-[MIT](LICENSE)
-
----
-
-[Part of the Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
+[MIT](LICENSE) · [Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
