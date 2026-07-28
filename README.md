@@ -1,13 +1,14 @@
 # AI Infrastructure TCO Workbench
 
-[![CI](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-356c54)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-25362e)](pyproject.toml)
-[![FastAPI](https://img.shields.io/badge/fastapi-0.115%2B-25362e)](pyproject.toml)
-[![Coverage floor 80%](https://img.shields.io/badge/coverage%20floor-80%25-25362e)](pyproject.toml)
-[![Lint: Ruff](https://img.shields.io/badge/lint-ruff-25362e)](pyproject.toml)
-[![E2E: Playwright](https://img.shields.io/badge/e2e-playwright-25362e)](playwright.config.js)
-[![Container](https://img.shields.io/badge/container-docker-25362e)](Dockerfile)
+[![CI](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml/badge.svg?style=flat-square)](https://github.com/daetan999/ai-infra-tco-workbench/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-356c54?style=flat-square&labelColor=092019)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-25362e?style=flat-square&labelColor=092019)](pyproject.toml)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.115%2B-25362e?style=flat-square&labelColor=092019)](pyproject.toml)
+[![Coverage floor 80%](https://img.shields.io/badge/coverage%20floor-80%25-25362e?style=flat-square&labelColor=092019)](pyproject.toml)
+[![Lint: Ruff](https://img.shields.io/badge/lint-ruff-25362e?style=flat-square&labelColor=092019)](pyproject.toml)
+[![E2E: Playwright](https://img.shields.io/badge/e2e-playwright-25362e?style=flat-square&labelColor=092019)](playwright.config.js)
+[![Container](https://img.shields.io/badge/container-docker-25362e?style=flat-square&labelColor=092019)](Dockerfile)
+[![Portfolio](https://img.shields.io/badge/portfolio-technical__resume-356c54?style=flat-square&labelColor=092019)](https://github.com/daetan999/technical_resume)
 
 A local decision workspace for comparing AI infrastructure operating models with explicit assumptions, deterministic financial calculations, sensitivity analysis, and review-ready exports.
 
