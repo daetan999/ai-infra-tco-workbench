@@ -56,16 +56,6 @@ One-variable sensitivity ranges show which assumptions can move the five-year ca
 - Append immutable SQLite analysis versions instead of silently recalculating reviewed history.
 - Export a saved analysis as JSON, CSV, or a formatted PDF memo.
 
-## Visual system
-
-The interface takes its cues from a financial broadsheet rather than the dark, glowing conventions common to AI tooling.
-
-| Element | Treatment |
-| --- | --- |
-| Palette | Parchment workspace, forest-green decisions, oxblood comparison states |
-| Typography | Newsreader for editorial hierarchy; DM Mono for figures, labels, and formulas |
-| Geometry | Square rules, restrained borders, ledger-like tables, minimal shadow |
-| Information posture | Sources, confidence, and lineage remain visible beside the financial case |
 
 ## How it works
 
@@ -77,7 +67,7 @@ The interface takes its cues from a financial broadsheet rather than the dark, g
 4. Review cost, unit economics, sensitivity, confidence, and formula lineage.
 5. Export the stored analysis snapshot for further review.
 
-![Architecture showing the browser workspace, FastAPI boundary, calculation engine, SQLite persistence, and export paths](docs/assets/calculation-engine.svg)
+![Architecture: browser workspace to FastAPI boundary, then the deterministic Decimal calculation engine, with formula lineage, SQLite scenario versions, and exports](docs/assets/architecture.svg)
 
 The implementation is a focused FastAPI modular monolith:
 

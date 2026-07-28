@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 400" width="1060" height="400" role="img" aria-label="Architecture: browser workspace to FastAPI boundary, then the deterministic Decimal calculation engine, with formula lineage, SQLite scenario versions, and JSON, CSV, and PDF exports">
+  <title>Architecture: browser workspace to FastAPI boundary, then the deterministic Decimal calculation engine, with formula lineage, SQLite scenario versions, and JSON, CSV, and PDF exports</title>
+  <style>
+  text { font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; }
+  .node   { fill: none; stroke: #16181d; stroke-width: 1.25; }
+  .accent { fill: #f2f2f3; stroke: #16181d; stroke-width: 1.25; }
+  .store  { fill: none; stroke: #16181d; stroke-width: 1.25; stroke-dasharray: 3 3; }
+  .title  { font-size: 15px; font-weight: 600; fill: #16181d; }
+  .sub    { font-size: 12px; fill: #5b6270; }
+  .kick   { font-size: 10px; font-weight: 600; letter-spacing: .14em; fill: #5b6270; }
+  .note   { font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size: 11px; fill: #5b6270; }
+  .edge   { fill: none; stroke: #16181d; stroke-width: 1.25; }
+  .edge-o { fill: none; stroke: #5b6270; stroke-width: 1.25; stroke-dasharray: 4 4; }
+  .rule   { stroke: #16181d; stroke-width: 1; opacity: .18; }
+  .head   { fill: #16181d; }
+  .head-o { fill: #5b6270; }
+  @media (prefers-color-scheme: dark) {
+    .node, .store { stroke: #e6e8eb; }
+    .accent { fill: #1b2027; stroke: #e6e8eb; }
+    .title { fill: #e6e8eb; }
+    .sub, .kick, .note { fill: #a3abb6; }
+    .edge { stroke: #e6e8eb; }
+    .edge-o { stroke: #a3abb6; }
+    .rule { stroke: #e6e8eb; }
+    .head { fill: #e6e8eb; }
+    .head-o { fill: #a3abb6; }
+  }
+</style>
+  <text class="kick" x="40" y="38">TCO WORKBENCH</text>
+  <text class="title" x="40" y="62">Calculation path and stored analysis</text>
+  <line class="rule" x1="40" y1="82" x2="1020" y2="82"/>
+  <rect class="node" x="40" y="192" width="190" height="76" rx="2"/>
+  <text class="title" x="56" y="227.5">Browser workspace</text>
+  <text class="sub" x="56" y="246.5">Assumptions + sources</text>
+  <rect class="accent" x="260" y="192" width="190" height="76" rx="2"/>
+  <text class="title" x="276" y="227.5">FastAPI boundary</text>
+  <text class="sub" x="276" y="246.5">Strict Pydantic contracts</text>
+  <rect class="accent" x="500" y="192" width="200" height="76" rx="2"/>
+  <text class="title" x="516" y="227.5">Decimal engine</text>
+  <text class="sub" x="516" y="246.5">TCO · ROI · sensitivity</text>
+  <rect class="node" x="760" y="110" width="230" height="60" rx="2"/>
+  <text class="title" x="776" y="145.0">Formula lineage</text>
+  <rect class="store" x="760" y="200" width="230" height="60" rx="2"/>
+  <text class="title" x="776" y="235.0">SQLite scenario versions</text>
+  <rect class="node" x="760" y="290" width="230" height="60" rx="2"/>
+  <text class="title" x="776" y="325.0">JSON / CSV / PDF exports</text>
+  <line class="edge" x1="230" y1="230" x2="251" y2="230"/>
+  <polygon class="head" points="251,225 260,230 251,235"/>
+  <line class="edge" x1="450" y1="230" x2="491" y2="230"/>
+  <polygon class="head" points="491,225 500,230 491,235"/>
+  <path class="edge" d="M 700 230 L 730.0 230 L 730.0 140 L 751 140"/>
+  <polygon class="head" points="751,135 760,140 751,145"/>
+  <line class="edge" x1="700" y1="230" x2="751" y2="230"/>
+  <polygon class="head" points="751,225 760,230 751,235"/>
+  <path class="edge" d="M 700 230 L 730.0 230 L 730.0 320 L 751 320"/>
+  <polygon class="head" points="751,315 760,320 751,325"/>
+  <text class="note" x="40" y="375" text-anchor="start">Deterministic Decimal arithmetic — no model inference, no live pricing feed, no network call.</text>
+</svg>
