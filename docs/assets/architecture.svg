@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 400" width="1060" height="400" role="img" aria-label="Architecture: browser workspace to FastAPI boundary, then the deterministic Decimal calculation engine, with formula lineage, SQLite scenario versions, and JSON, CSV, and PDF exports">
   <title>Architecture: browser workspace to FastAPI boundary, then the deterministic Decimal calculation engine, with formula lineage, SQLite scenario versions, and JSON, CSV, and PDF exports</title>
+  <desc>The browser workspace sends validated assumptions to a deterministic Decimal engine with formula lineage, immutable SQLite scenario versions, and JSON, CSV, and PDF exports.</desc>
   <style>
   text { font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; }
   .node   { fill: none; stroke: #16181d; stroke-width: 1.25; }
